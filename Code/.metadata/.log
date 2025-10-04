@@ -1,0 +1,21 @@
+!SESSION 2025-10-04 21:58:43.894 -----------------------------------------------
+eclipse.buildId=Version 1.19.0
+java.version=21.0.3
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=cs_CZ
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -data C:\Users\DELL_KM\Desktop\LoRa_RTC\Code
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 4 4 2025-10-04 21:58:52.791
+!MESSAGE CubeMX plugin appears to be active, Log4j initialization might be too late.
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2025-10-04 21:58:52.794
+!MESSAGE Log4j2 initialized with config file C:\Users\DELL_KM\Desktop\LoRa_RTC\Code\.metadata\.log4j2.xml
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2025-10-04 21:58:57.069
+!MESSAGE Started RMI Server, listening on port 41337
+
+!ENTRY org.eclipse.cdt.core 1 0 2025-10-04 22:04:41.187
+!MESSAGE Indexed 'LoRaWAN_End_Node' (86 sources, 195 headers) in 8.07 sec: 18,069 declarations; 80,900 references; 0 unresolved inclusions; 1 syntax errors; 11 unresolved names (0.011%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2025-10-04 22:09:08.152
+!MESSAGE Indexed 'LoRaWAN_End_Node' (88 sources, 195 headers) in 5.11 sec: 18,134 declarations; 80,974 references; 0 unresolved inclusions; 1 syntax errors; 13 unresolved names (0.013%)
