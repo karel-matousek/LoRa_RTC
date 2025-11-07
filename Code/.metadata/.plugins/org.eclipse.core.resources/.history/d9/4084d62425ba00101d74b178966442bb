@@ -1,0 +1,188 @@
+/* USER CODE BEGIN Header */
+/**
+  ******************************************************************************
+  * @file    subghz_phy_app.c
+  * @author  MCD Application Team
+  * @brief   Application of the SubGHz_Phy Middleware
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2025 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
+/* USER CODE END Header */
+
+/* Includes ------------------------------------------------------------------*/
+#include "platform.h"
+#include "sys_app.h"
+#include "subghz_phy_app.h"
+#include "radio.h"
+
+/* USER CODE BEGIN Includes */
+#include <stdio.h>
+/* USER CODE END Includes */
+
+/* External variables ---------------------------------------------------------*/
+/* USER CODE BEGIN EV */
+
+/* USER CODE END EV */
+
+/* Private typedef -----------------------------------------------------------*/
+/* USER CODE BEGIN PTD */
+
+/* USER CODE END PTD */
+
+/* Private define ------------------------------------------------------------*/
+/* USER CODE BEGIN PD */
+#define BEACON_FREQUENCY 	869525000UL	// Frequency 869525 kHz
+#define BEACON_BW			0			// Bandwidth 125 kHz
+#define BEACON_SF			9			// Spreading factor 9
+#define BEACON_CR			1			// Code rate 4/5
+#define BEACON_PREAMBLE		10			// Preamble 10 symbols
+/* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
+
+/* USER CODE END PM */
+
+/* Private variables ---------------------------------------------------------*/
+/* Radio events function pointer */
+static RadioEvents_t RadioEvents;
+
+/* USER CODE BEGIN PV */
+
+/* USER CODE END PV */
+
+/* Private function prototypes -----------------------------------------------*/
+/*!
+ * @brief Function to be executed on Radio Tx Done event
+ */
+static void OnTxDone(void);
+
+/**
+  * @brief Function to be executed on Radio Rx Done event
+  * @param  payload ptr of buffer received
+  * @param  size buffer size
+  * @param  rssi
+  * @param  LoraSnr_FskCfo
+  */
+static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraSnr_FskCfo);
+
+/**
+  * @brief Function executed on Radio Tx Timeout event
+  */
+static void OnTxTimeout(void);
+
+/**
+  * @brief Function executed on Radio Rx Timeout event
+  */
+static void OnRxTimeout(void);
+
+/**
+  * @brief Function executed on Radio Rx Error event
+  */
+static void OnRxError(void);
+
+/* USER CODE BEGIN PFP */
+
+/* USER CODE END PFP */
+
+/* Exported functions ---------------------------------------------------------*/
+void SubghzApp_Init(void)
+{
+  /* USER CODE BEGIN SubghzApp_Init_1 */
+	printf("SubghzApp_Init: initializing radio for LoRaWAN beacon listening\r\n");
+  /* USER CODE END SubghzApp_Init_1 */
+
+  /* Radio initialization */
+  memset(&RadioEvents, 0, sizeof(RadioEvents));
+  RadioEvents.TxDone = OnTxDone;
+  RadioEvents.RxDone = OnRxDone;
+  RadioEvents.TxTimeout = OnTxTimeout;
+  RadioEvents.RxTimeout = OnRxTimeout;
+  RadioEvents.RxError = OnRxError;
+
+  Radio.Init(&RadioEvents);
+
+  /* USER CODE BEGIN SubghzApp_Init_2 */
+
+  // Set public network syncword (0x3444)
+  Radio.Write(0x0740, 0x34);
+  Radio.Write(0x0741, 0x44);
+
+  // Set channel
+  Radio.SetChannel(BEACON_FREQUENCY);
+
+  // Receive parameters configuration
+  Radio.SetRxConfig(MODEM_LORA, LORA_BW, LORA_SF, LORA_CR, 0, 8, 0, false, 0, false, false, 0, true, true);
+
+  // Start continuous receive
+  Radio.Rx(0);
+  printf("RX activated\r\n");
+
+  /* USER CODE END SubghzApp_Init_2 */
+}
+
+/* USER CODE BEGIN EF */
+
+/* USER CODE END EF */
+
+/* Private functions ---------------------------------------------------------*/
+static void OnTxDone(void)
+{
+  /* USER CODE BEGIN OnTxDone */
+	printf("Radio: TX done\r\n");
+	Radio.Rx(0);
+  /* USER CODE END OnTxDone */
+}
+
+static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraSnr_FskCfo)
+{
+  /* USER CODE BEGIN OnRxDone */
+	printf("\r\n=== PACKET RECEIVED ===\r\n");
+	printf("Size: %d bytes\r\nRSSI: %d dBm, SNR: %d dB\r\n", size, rssi, LoraSnr_FskCfo);
+	printf("Data: ");
+	for (uint16_t i = 0; i < size; i++)
+	{
+		printf("%02X ", payload[i]);
+	}
+	printf("\r\n========================\r\n");
+
+	Radio.Rx(0);
+  /* USER CODE END OnRxDone */
+}
+
+static void OnTxTimeout(void)
+{
+  /* USER CODE BEGIN OnTxTimeout */
+	printf("Radio: TX timeout\r\n");
+	Radio.Rx(0);
+  /* USER CODE END OnTxTimeout */
+}
+
+static void OnRxTimeout(void)
+{
+  /* USER CODE BEGIN OnRxTimeout */
+	printf("RX timeout\n\r");
+	Radio.Rx(0);
+  /* USER CODE END OnRxTimeout */
+}
+
+static void OnRxError(void)
+{
+  /* USER CODE BEGIN OnRxError */
+	printf("RX error\n\r");
+	Radio.Rx(0);
+  /* USER CODE END OnRxError */
+}
+
+/* USER CODE BEGIN PrFD */
+
+/* USER CODE END PrFD */

@@ -50,7 +50,7 @@ extern "C" {
 /*!
  * Defines the application data transmission duty cycle. 10s, value in [ms].
  */
-#define APP_TX_DUTYCYCLE                            30000
+#define APP_TX_DUTYCYCLE                            15000
 
 /*!
  * LoRaWAN User application port
@@ -89,7 +89,7 @@ extern "C" {
 /*!
  * LoRaWAN default activation type
  */
-#define LORAWAN_DEFAULT_ACTIVATION_TYPE             ACTIVATION_TYPE_OTAA
+#define LORAWAN_DEFAULT_ACTIVATION_TYPE             ACTIVATION_TYPE_ABP
 
 /*!
  * User application data buffer size

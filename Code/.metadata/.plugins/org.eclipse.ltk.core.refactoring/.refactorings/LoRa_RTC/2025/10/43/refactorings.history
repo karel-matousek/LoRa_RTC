@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">&#x0A;<refactoring comment="Rename resource &apos;LoRa_RTC/Core/Inc/lora_listen.h&apos; to &apos;lora_functions.h&apos;" description="Rename resource &apos;lora_listen.h&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="Core/Inc/lora_listen.h" name="lora_functions.h" stamp="1761406032281" updateReferences="true"/>&#x0A;<refactoring comment="Rename resource &apos;LoRa_RTC/Core/Src/lora_listen.c&apos; to &apos;lora_functions.c&apos;" description="Rename resource &apos;lora_listen.c&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="Core/Src/lora_listen.c" name="lora_functions.c" stamp="1761406045827" updateReferences="true"/>
+</session>

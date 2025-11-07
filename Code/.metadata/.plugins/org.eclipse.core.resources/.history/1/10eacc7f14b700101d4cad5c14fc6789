@@ -1,0 +1,110 @@
+#include "radio_driver.h"
+#include "lora_functions.h"
+#include "stm32wlxx_hal.h"
+#include <stdio.h>
+
+/*
+ * Functions to call:	lora_init()
+ * 						lora_continual_receive()
+ */
+
+// Init function
+void lora_init(void) {
+
+	PacketParams_t packetParams = {
+		.PacketType = PACKET_TYPE_LORA,
+		.Params.LoRa = {
+			.PreambleLength = 8,
+			.HeaderType = LORA_PACKET_VARIABLE_LENGTH,
+			.PayloadLength = 255,
+			.CrcMode = LORA_CRC_ON,
+			.InvertIQ = LORA_IQ_NORMAL
+		}
+	};
+
+	ModulationParams_t modulationParams = {
+		.PacketType = PACKET_TYPE_LORA,
+		.Params.LoRa = {
+			.SpreadingFactor = LORA_SF9,
+			.Bandwidth = LORA_BW_125,
+			.CodingRate = LORA_CR_4_5,
+			.LowDatarateOptimize = 0
+		}
+	};
+
+	SUBGRF_SetBufferBaseAddress(0x00, 0x00);
+	SUBGRF_SetPacketType(PACKET_TYPE_LORA);
+	SUBGRF_SetModulationParams(&modulationParams);
+	SUBGRF_SetPacketParams(&packetParams);
+
+	SUBGRF_WriteRegister(0x0736, 0x01);	// IQ inverted - necessary for Class B beacon receive
+	SUBGRF_WriteRegister(0x0740, 0x34); // syncword high - standard for downlink/beacon
+	SUBGRF_WriteRegister(0x0741, 0x44); // syncword low - standard for downlink/beacon
+	SUBGRF_SetRfFrequency(869525000);
+
+	uint16_t irqMask = IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT;
+	uint16_t dio1Mask = IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT;
+	SUBGRF_SetDioIrqParams(irqMask, dio1Mask, 0, 0);
+}
+
+// Receive function
+void lora_continual_receive(void) {
+	SUBGRF_SetRx(0xFFFFFF);
+}
+
+// Callback function
+void HAL_SUBGHZ_RxCpltCallback(SUBGHZ_HandleTypeDef *hsubghz)
+{
+	SUBGRF_ClearIrqStatus(IRQ_RADIO_ALL);
+	uint16_t irqStatus = SUBGRF_GetIrqStatus();
+
+	uint_8 uartBuffer[30];
+	uint_8 msg[];
+
+	if (irqStatus & IRQ_RX_DONE)	// Data received
+	{
+		uint8_t payloadSize;
+		uint8_t payloadStart;
+		uint8_t payloadBuffer[255];
+
+
+		SUBGRF_GetRxBufferStatus(&payloadSize, &payloadStart);			// Get size and starting address of payload in RX buffer
+		SUBGRF_ReadBuffer(payloadStart, payloadBuffer, payloadSize);	// Read payload from RX buffer
+
+		msg = "Packet received (%d bytes)\r\n";
+		HAL_UART_Transmit(&huart1, msg, 30, 1000);
+
+		printf("Data: ");
+		HAL_UART_Transmit(&huart1, "Data: ", 30, 1000);
+		for (uint8_t i = 0; i < payloadSize; i++)
+		{
+			printf("%02X ", payloadBuffer[i]);
+		}
+		printf("\r\n");
+	}
+
+	else if (irqStatus & IRQ_HEADER_ERROR)
+	{
+		printf("Header error\r\n");
+	}
+
+	else if (irqStatus & IRQ_CRC_ERROR)
+	{
+		printf("CRC error\r\n");
+	}
+
+	else if (irqStatus & IRQ_RX_TX_TIMEOUT)
+	{
+		printf("RX timeout\r\n");
+	}
+
+
+    SUBGRF_SetRx(0xFFFFFF);
+}
+
+// RX timeout function
+void HAL_SUBGHZ_RxTxTimeoutCallback(SUBGHZ_HandleTypeDef *hsubghz)
+{
+	printf("RX timeout\r\n");
+	SUBGRF_SetRx(0xFFFFFF);
+}

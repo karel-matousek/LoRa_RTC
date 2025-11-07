@@ -1,0 +1,65 @@
+2025-10-22 07:47:40,068 [INFO] WebApp:194 - Connection lost
+2025-10-22 07:47:48,723 [INFO] WebApp:191 - Connection restablished
+2025-10-22 07:47:54,171 [INFO] WebApp:194 - Connection lost
+2025-10-22 07:47:54,521 [INFO] WebApp:191 - Connection restablished
+2025-10-22 07:47:54,683 [INFO] WebApp:194 - Connection lost
+2025-10-22 07:47:54,905 [INFO] WebApp:191 - Connection restablished
+2025-10-22 07:48:05,546 [INFO] UtilMem:75 - End SaveConfig() Used Memory: 402678760 Bytes (874512384)
+2025-10-22 07:48:05,724 [INFO] UtilMem:75 - End SaveConfig() Used Memory: 417885160 Bytes (874512384)
+2025-10-22 07:48:06,128 [INFO] UtilMem:75 - End SaveConfig() Used Memory: 439905256 Bytes (874512384)
+2025-10-22 07:48:06,531 [INFO] BlockDiagram:2775 - set Specific Code input for plugin: SUBGHZ
+2025-10-22 07:48:06,531 [INFO] BlockDiagram:2775 - set Specific Code input for plugin: TIM1_8WL5
+2025-10-22 07:48:06,531 [INFO] BlockDiagram:2775 - set Specific Code input for plugin: SYS
+2025-10-22 07:48:06,531 [INFO] BlockDiagram:2775 - set Specific Code input for plugin: RCC
+2025-10-22 07:48:06,533 [INFO] BlockDiagram:2775 - set Specific Code input for plugin: RTC
+2025-10-22 07:48:06,533 [INFO] BlockDiagram:2775 - set Specific Code input for plugin: NVIC
+2025-10-22 07:48:06,533 [INFO] BlockDiagram:2775 - set Specific Code input for plugin: USART
+2025-10-22 07:48:06,534 [INFO] BlockDiagram:2775 - set Specific Code input for plugin: GPIO
+2025-10-22 07:48:06,536 [INFO] CodeGenerator:892 - code generatio: config db path: C:\ST\STM32CubeIDE_1.19.0\STM32CubeIDE\plugins\com.st.stm32cube.common.mx_6.15.0.202507011659\\db\
+2025-10-22 07:48:06,550 [WARN] IP:2250 - OutPut1 not found: check if there is a RefParameter without a condition.
+2025-10-22 07:48:06,552 [WARN] IP:2250 - OutPut2 not found: check if there is a RefParameter without a condition.
+2025-10-22 07:48:06,552 [WARN] IP:2250 - OutPut3 not found: check if there is a RefParameter without a condition.
+2025-10-22 07:48:06,552 [WARN] IP:2250 - BinMixBcdU not found: check if there is a RefParameter without a condition.
+2025-10-22 07:48:06,552 [WARN] IP:2250 - SSRU_Underflow_Interrupt not found: check if there is a RefParameter without a condition.
+2025-10-22 07:48:06,552 [WARN] IP:2250 - SSRU_Underflow_Interrupt not found: check if there is a RefParameter without a condition.
+2025-10-22 07:48:06,552 [WARN] IP:2250 - BinMixBcdU not found: check if there is a RefParameter without a condition.
+2025-10-22 07:48:06,554 [WARN] IP:2250 - OutPut1 not found: check if there is a RefParameter without a condition.
+2025-10-22 07:48:06,554 [WARN] IP:2250 - OutPut2 not found: check if there is a RefParameter without a condition.
+2025-10-22 07:48:06,554 [WARN] IP:2250 - OutPut3 not found: check if there is a RefParameter without a condition.
+2025-10-22 07:48:06,555 [WARN] IP:2250 - BinMixBcdU not found: check if there is a RefParameter without a condition.
+2025-10-22 07:48:06,555 [WARN] IP:2250 - SSRU_Underflow_Interrupt not found: check if there is a RefParameter without a condition.
+2025-10-22 07:48:06,555 [WARN] IP:2250 - BinaryAutoClr_A not found: check if there is a RefParameter without a condition.
+2025-10-22 07:48:06,759 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Users\DELL_KM\Desktop\LoRa_RTC\Code\LoRa_RTC\MXTmpFiles\license.tmp_save
+2025-10-22 07:48:07,022 [INFO] CodeEngine:289 - Generated code: C:\Users\DELL_KM\Desktop\LoRa_RTC\Code\LoRa_RTC\MXTmpFiles\license.tmp
+2025-10-22 07:48:07,078 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Users\DELL_KM\Desktop\LoRa_RTC\Code\LoRa_RTC\MXTmpFiles\gpio.tmp_save
+2025-10-22 07:48:07,284 [INFO] CodeEngine:289 - Generated code: C:\Users\DELL_KM\Desktop\LoRa_RTC\Code\LoRa_RTC\MXTmpFiles\gpio.tmp
+2025-10-22 07:48:07,295 [WARN] IP:2250 - OutPut1 not found: check if there is a RefParameter without a condition.
+2025-10-22 07:48:07,296 [WARN] IP:2250 - OutPut2 not found: check if there is a RefParameter without a condition.
+2025-10-22 07:48:07,296 [WARN] IP:2250 - OutPut3 not found: check if there is a RefParameter without a condition.
+2025-10-22 07:48:07,296 [WARN] IP:2250 - BinMixBcdU not found: check if there is a RefParameter without a condition.
+2025-10-22 07:48:07,296 [WARN] IP:2250 - SSRU_Underflow_Interrupt not found: check if there is a RefParameter without a condition.
+2025-10-22 07:48:07,296 [WARN] IP:2250 - SSRU_Underflow_Interrupt not found: check if there is a RefParameter without a condition.
+2025-10-22 07:48:07,296 [WARN] IP:2250 - BinMixBcdU not found: check if there is a RefParameter without a condition.
+2025-10-22 07:48:07,557 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Users\DELL_KM\Desktop\LoRa_RTC\Code\LoRa_RTC\Core\Src\stm32wlxx_it.c_save
+2025-10-22 07:48:08,043 [INFO] CodeEngine:289 - Generated code: C:\Users\DELL_KM\Desktop\LoRa_RTC\Code\LoRa_RTC\Core\Src\stm32wlxx_it.c
+2025-10-22 07:48:08,069 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Users\DELL_KM\Desktop\LoRa_RTC\Code\LoRa_RTC\Core\Inc\stm32wlxx_it.h_save
+2025-10-22 07:48:08,222 [INFO] CodeEngine:289 - Generated code: C:\Users\DELL_KM\Desktop\LoRa_RTC\Code\LoRa_RTC\Core\Inc\stm32wlxx_it.h
+2025-10-22 07:48:08,307 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Users\DELL_KM\Desktop\LoRa_RTC\Code\LoRa_RTC\Core\Src\stm32wlxx_hal_msp.c_save
+2025-10-22 07:48:08,627 [INFO] CodeEngine:289 - Generated code: C:\Users\DELL_KM\Desktop\LoRa_RTC\Code\LoRa_RTC\Core\Src\stm32wlxx_hal_msp.c
+2025-10-22 07:48:08,642 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Users\DELL_KM\Desktop\LoRa_RTC\Code\LoRa_RTC\MXTmpFiles\system.tmp_save
+2025-10-22 07:48:08,774 [INFO] CodeEngine:289 - Generated code: C:\Users\DELL_KM\Desktop\LoRa_RTC\Code\LoRa_RTC\MXTmpFiles\system.tmp
+2025-10-22 07:48:08,805 [INFO] CodeEngine:321 - oldGeneratedFile, C:\Users\DELL_KM\Desktop\LoRa_RTC\Code\LoRa_RTC\Core\Inc\stm32wlxx_hal_conf.h_save
+2025-10-22 07:48:08,976 [INFO] CodeEngine:345 - Generated code: C:\Users\DELL_KM\Desktop\LoRa_RTC\Code\LoRa_RTC\Core\Inc\stm32wlxx_hal_conf.h
+2025-10-22 07:48:09,051 [INFO] ApiDbMcu:532 - Load IP Config File for TIM2
+2025-10-22 07:48:09,056 [WARN] IPConfigManager:3811 - IP not found : TIM
+2025-10-22 07:48:09,056 [WARN] CodeGenerator:4259 - IP not found : null
+2025-10-22 07:48:09,077 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Users\DELL_KM\Desktop\LoRa_RTC\Code\LoRa_RTC\Core\Inc\main.h_save
+2025-10-22 07:48:09,432 [INFO] CodeEngine:289 - Generated code: C:\Users\DELL_KM\Desktop\LoRa_RTC\Code\LoRa_RTC\Core\Inc\main.h
+2025-10-22 07:48:09,454 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Users\DELL_KM\Desktop\LoRa_RTC\Code\LoRa_RTC\Core\Src\main.c_save
+2025-10-22 07:48:09,724 [INFO] CodeEngine:289 - Generated code: C:\Users\DELL_KM\Desktop\LoRa_RTC\Code\LoRa_RTC\Core\Src\main.c
+2025-10-22 07:48:10,740 [INFO] ProjectBuilder:3606 - Time for Copy HAL[1] : 476mS.
+2025-10-22 07:48:10,750 [INFO] ProjectBuilder:5216 - Project Generator version: 4.7.0-B52
+2025-10-22 07:48:10,922 [INFO] ConfigFileManager:1595 - The Die is : DIE497
+2025-10-22 07:48:12,775 [INFO] ProjectBuilder:5496 - Time for Generating toolchain IDE Files: 2025mS.
+2025-10-22 07:48:12,776 [INFO] ProjectBuilder:3463 - Time for Copy CMSIS : 0mS.
+2025-10-22 07:48:12,783 [INFO] ProjectBuilder:3463 - Time for Copy CMSIS : 1mS.

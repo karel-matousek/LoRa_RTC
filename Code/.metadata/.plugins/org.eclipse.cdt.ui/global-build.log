@@ -1,0 +1,27 @@
+10:36:10 **** Incremental Build of configuration Debug for project LoRa_RTC ****
+make -j12 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DCORE_CM4 -DUSE_HAL_DRIVER -DSTM32WLE5xx -c -I../Core/Inc -I../Drivers/STM32WLxx_HAL_Driver/Inc -I../Drivers/STM32WLxx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32WLxx/Include -I../Drivers/CMSIS/Include -I../SubGHz_Phy/App -I../SubGHz_Phy/Target -I../Utilities/trace/adv_trace -I../Utilities/misc -I../Utilities/sequencer -I../Utilities/timer -I../Utilities/lpm/tiny_lpm -I../Middlewares/Third_Party/SubGHz_Phy -I../Middlewares/Third_Party/SubGHz_Phy/stm32_radio_driver -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+In file included from ../SubGHz_Phy/Target/radio_conf.h:34,
+                 from ../Middlewares/Third_Party/SubGHz_Phy/stm32_radio_driver/radio_driver.h:45,
+                 from ../SubGHz_Phy/App/subghz_phy_app.h:32,
+                 from ../Core/Src/main.c:28:
+../SubGHz_Phy/Target/radio_board_if.h:92:2: warning: #warning user to provide its board definitions pins [-Wcpp]
+   92 | #warning user to provide its board definitions pins
+      |  ^~~~~~~
+arm-none-eabi-gcc -o "LoRa_RTC.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\DELL_KM\Desktop\LoRa_RTC\Code\LoRa_RTC\STM32WLE5JCIX_FLASH.ld" --specs=nosys.specs -Wl,-Map="LoRa_RTC.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: LoRa_RTC.elf
+ 
+arm-none-eabi-size  LoRa_RTC.elf 
+arm-none-eabi-objdump -h -S LoRa_RTC.elf  > "LoRa_RTC.list"
+arm-none-eabi-objcopy  -O ihex LoRa_RTC.elf  "LoRa_RTC.hex"
+   text	   data	    bss	    dec	    hex	filename
+  42208	    104	   2656	  44968	   afa8	LoRa_RTC.elf
+arm-none-eabi-objcopy  -O binary LoRa_RTC.elf  "LoRa_RTC.bin"
+Finished building: default.size.stdout
+ 
+Finished building: LoRa_RTC.bin
+Finished building: LoRa_RTC.hex
+ 
+ 
+Finished building: LoRa_RTC.list
+ 
