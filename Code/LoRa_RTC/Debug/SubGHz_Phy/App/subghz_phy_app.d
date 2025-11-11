@@ -52,7 +52,8 @@ SubGHz_Phy/App/subghz_phy_app.o: ../SubGHz_Phy/App/subghz_phy_app.c \
  ../Middlewares/Third_Party/SubGHz_Phy/radio.h \
  ../Middlewares/Third_Party/SubGHz_Phy/radio_def.h \
  ../Middlewares/Third_Party/SubGHz_Phy/radio_ex.h \
- ../Middlewares/Third_Party/SubGHz_Phy/lr_fhss_v1_base_types.h
+ ../Middlewares/Third_Party/SubGHz_Phy/lr_fhss_v1_base_types.h \
+ ../SubGHz_Phy/Target/radio_board_if.h
 ../Core/Inc/platform.h:
 ../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wlxx.h:
 ../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wle5xx.h:
@@ -112,3 +113,4 @@ SubGHz_Phy/App/subghz_phy_app.o: ../SubGHz_Phy/App/subghz_phy_app.c \
 ../Middlewares/Third_Party/SubGHz_Phy/radio_def.h:
 ../Middlewares/Third_Party/SubGHz_Phy/radio_ex.h:
 ../Middlewares/Third_Party/SubGHz_Phy/lr_fhss_v1_base_types.h:
+../SubGHz_Phy/Target/radio_board_if.h:

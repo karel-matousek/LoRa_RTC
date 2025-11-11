@@ -93,6 +93,10 @@ extern SUBGHZ_HandleTypeDef hsubghz;
 
 /* USER CODE BEGIN EC */
 
+#define IS_TCXO_SUPPORTED   1U
+#define IS_DCDC_SUPPORTED   1U
+#define RBI_CONF_RFO        RBI_CONF_RFO_LP_HP
+
 /* USER CODE END EC */
 
 /* External variables --------------------------------------------------------*/

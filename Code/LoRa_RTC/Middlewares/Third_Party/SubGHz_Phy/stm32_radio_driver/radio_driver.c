@@ -1085,10 +1085,10 @@ void HAL_SUBGHZ_TxCpltCallback(SUBGHZ_HandleTypeDef *hsubghz)
     RadioOnDioIrqCb( IRQ_TX_DONE );
 }
 
-/*void HAL_SUBGHZ_RxCpltCallback(SUBGHZ_HandleTypeDef *hsubghz)
+void HAL_SUBGHZ_RxCpltCallback(SUBGHZ_HandleTypeDef *hsubghz)
 {
     RadioOnDioIrqCb( IRQ_RX_DONE );
-}*/
+}
 
 void HAL_SUBGHZ_CRCErrorCallback (SUBGHZ_HandleTypeDef *hsubghz)
 {
@@ -1110,10 +1110,10 @@ void HAL_SUBGHZ_CADStatusCallback(SUBGHZ_HandleTypeDef *hsubghz, HAL_SUBGHZ_CadS
     }
 }
 
-/*void HAL_SUBGHZ_RxTxTimeoutCallback(SUBGHZ_HandleTypeDef *hsubghz)
+void HAL_SUBGHZ_RxTxTimeoutCallback(SUBGHZ_HandleTypeDef *hsubghz)
 {
     RadioOnDioIrqCb( IRQ_RX_TX_TIMEOUT );
-}*/
+}
 
 void HAL_SUBGHZ_HeaderErrorCallback(SUBGHZ_HandleTypeDef *hsubghz)
 {

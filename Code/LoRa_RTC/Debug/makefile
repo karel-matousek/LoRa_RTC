@@ -74,8 +74,8 @@ all: main-build
 main-build: LoRa_RTC.elf secondary-outputs
 
 # Tool invocations
-LoRa_RTC.elf LoRa_RTC.map: $(OBJS) $(USER_OBJS) C:\Users\DELL_KM\Desktop\LoRa_RTC\Code\LoRa_RTC\STM32WLE5JCIX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "LoRa_RTC.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\DELL_KM\Desktop\LoRa_RTC\Code\LoRa_RTC\STM32WLE5JCIX_FLASH.ld" --specs=nosys.specs -Wl,-Map="LoRa_RTC.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+LoRa_RTC.elf LoRa_RTC.map: $(OBJS) $(USER_OBJS) C:\Users\DELL_KM\Desktop\Bakalářka\LoRa_RTC\Code\LoRa_RTC\STM32WLE5JCIX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "LoRa_RTC.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\DELL_KM\Desktop\Bakalářka\LoRa_RTC\Code\LoRa_RTC\STM32WLE5JCIX_FLASH.ld" --specs=nosys.specs -Wl,-Map="LoRa_RTC.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

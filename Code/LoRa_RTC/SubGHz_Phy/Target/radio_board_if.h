@@ -29,7 +29,7 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "platform.h"
 /* USER CODE BEGIN include */
-
+//#include "stm32wlxx_hal.h"
 /* USER CODE END include */
 
 /* Exported defines ----------------------------------------------------------*/
@@ -89,11 +89,17 @@ extern "C" {
 
 #else
 /* USER CODE BEGIN Exported PinMapping */
-#warning user to provide its board definitions pins
+//#warning user to provide its board definitions pins
 /* USER CODE END Exported PinMapping */
 #endif  /* USE_BSP_DRIVER  */
 
 /* USER CODE BEGIN ED */
+
+/* Pin mapping for Wio-E5 */
+//#define RF_SW_CTRL1_PIN      GPIO_PIN_4
+//#define RF_SW_CTRL1_PORT     GPIOA
+//#define RF_SW_CTRL2_PIN      GPIO_PIN_5
+//#define RF_SW_CTRL2_PORT     GPIOA
 
 /* USER CODE END ED */
 

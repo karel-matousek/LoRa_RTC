@@ -23,6 +23,8 @@
 
 /* USER CODE BEGIN Includes */
 
+#include "stm32wlxx_hal.h"
+
 /* USER CODE END Includes */
 
 /* External variables ---------------------------------------------------------*/
@@ -48,6 +50,10 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 
+#define RF_SW_CTRL1_PIN   GPIO_PIN_4  // PA4
+#define RF_SW_CTRL2_PIN   GPIO_PIN_5  // PA5
+#define RF_SW_CTRL_PORT   GPIOA
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -59,6 +65,21 @@
 int32_t RBI_Init(void)
 {
   /* USER CODE BEGIN RBI_Init_1 */
+
+	  GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+	  __HAL_RCC_GPIOA_CLK_ENABLE();
+
+	  GPIO_InitStruct.Pin = RF_SW_CTRL1_PIN | RF_SW_CTRL2_PIN;
+	  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	  GPIO_InitStruct.Pull = GPIO_NOPULL;
+	  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	  HAL_GPIO_Init(RF_SW_CTRL_PORT, &GPIO_InitStruct);
+
+	  HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL1_PIN, GPIO_PIN_RESET);
+	  HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL2_PIN, GPIO_PIN_RESET);
+
+	  return 0;
 
   /* USER CODE END RBI_Init_1 */
 #if defined(USE_BSP_DRIVER)
@@ -76,7 +97,7 @@ int32_t RBI_Init(void)
   /* 2/ Or implement RBI_Init here */
   int32_t retcode = 0;
   /* USER CODE BEGIN RBI_Init_2 */
-#warning user to provide its board code or to call his board driver functions
+//#warning user to provide its board code or to call his board driver functions
   /* USER CODE END RBI_Init_2 */
   return retcode;
 #endif  /* USE_BSP_DRIVER  */
@@ -85,7 +106,8 @@ int32_t RBI_Init(void)
 int32_t RBI_DeInit(void)
 {
   /* USER CODE BEGIN RBI_DeInit_1 */
-
+	  HAL_GPIO_DeInit(RF_SW_CTRL_PORT, RF_SW_CTRL1_PIN | RF_SW_CTRL2_PIN);
+	  return 0;
   /* USER CODE END RBI_DeInit_1 */
 #if defined(USE_BSP_DRIVER)
   /* Important note: BSP code is board dependent
@@ -102,7 +124,7 @@ int32_t RBI_DeInit(void)
   /* 2/ Or implement RBI_DeInit here */
   int32_t retcode = 0;
   /* USER CODE BEGIN RBI_DeInit_2 */
-#warning user to provide its board code or to call his board driver functions
+//#warning user to provide its board code or to call his board driver functions
   /* USER CODE END RBI_DeInit_2 */
   return retcode;
 #endif  /* USE_BSP_DRIVER */
@@ -112,6 +134,31 @@ int32_t RBI_ConfigRFSwitch(RBI_Switch_TypeDef Config)
 {
   /* USER CODE BEGIN RBI_ConfigRFSwitch_1 */
 
+	  switch (Config)
+	  {
+	    case RBI_SWITCH_OFF:
+	    	HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL1_PIN, GPIO_PIN_RESET);
+	    	HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL2_PIN, GPIO_PIN_RESET);
+	      break;
+
+	    case RBI_SWITCH_RX:
+	      HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL1_PIN, GPIO_PIN_SET);
+	      HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL2_PIN, GPIO_PIN_RESET);
+	      break;
+
+	    case RBI_SWITCH_RFO_LP:
+	      HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL1_PIN, GPIO_PIN_RESET);
+	      HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL2_PIN, GPIO_PIN_SET);
+	      break;
+
+	    case RBI_SWITCH_RFO_HP:
+	      HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL1_PIN, GPIO_PIN_SET);
+	      HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL2_PIN, GPIO_PIN_SET);
+	      break;
+
+	    default:
+	      break;
+	  }
   /* USER CODE END RBI_ConfigRFSwitch_1 */
 #if defined(USE_BSP_DRIVER)
 
@@ -129,7 +176,7 @@ int32_t RBI_ConfigRFSwitch(RBI_Switch_TypeDef Config)
   /* 2/ Or implement RBI_ConfigRFSwitch here */
   int32_t retcode = 0;
   /* USER CODE BEGIN RBI_ConfigRFSwitch_2 */
-#warning user to provide its board code or to call his board driver functions
+//#warning user to provide its board code or to call his board driver functions
   /* USER CODE END RBI_ConfigRFSwitch_2 */
   return retcode;
 #endif  /* USE_BSP_DRIVER */
@@ -138,7 +185,7 @@ int32_t RBI_ConfigRFSwitch(RBI_Switch_TypeDef Config)
 int32_t RBI_GetTxConfig(void)
 {
   /* USER CODE BEGIN RBI_GetTxConfig_1 */
-
+	  return RBI_CONF_RFO_LP_HP;
   /* USER CODE END RBI_GetTxConfig_1 */
 #if defined(USE_BSP_DRIVER)
   /* Important note: BSP code is board dependent
@@ -155,7 +202,7 @@ int32_t RBI_GetTxConfig(void)
   /* 2/ Or implement RBI_GetTxConfig here */
   int32_t retcode = RBI_CONF_RFO;
   /* USER CODE BEGIN RBI_GetTxConfig_2 */
-#warning user to provide its board code or to call his board driver functions
+//#warning user to provide its board code or to call his board driver functions
   /* USER CODE END RBI_GetTxConfig_2 */
   return retcode;
 #endif  /* USE_BSP_DRIVER */
@@ -164,7 +211,7 @@ int32_t RBI_GetTxConfig(void)
 int32_t RBI_IsTCXO(void)
 {
   /* USER CODE BEGIN RBI_IsTCXO_1 */
-
+	  return IS_TCXO_SUPPORTED;
   /* USER CODE END RBI_IsTCXO_1 */
 #if defined(USE_BSP_DRIVER)
   /* Important note: BSP code is board dependent
@@ -181,7 +228,7 @@ int32_t RBI_IsTCXO(void)
   /* 2/ Or implement RBI_IsTCXO here */
   int32_t retcode = IS_TCXO_SUPPORTED;
   /* USER CODE BEGIN RBI_IsTCXO_2 */
-#warning user to provide its board code or to call his board driver functions
+//#warning user to provide its board code or to call his board driver functions
   /* USER CODE END RBI_IsTCXO_2 */
   return retcode;
 #endif  /* USE_BSP_DRIVER  */
@@ -190,7 +237,7 @@ int32_t RBI_IsTCXO(void)
 int32_t RBI_IsDCDC(void)
 {
   /* USER CODE BEGIN RBI_IsDCDC_1 */
-
+	  return IS_DCDC_SUPPORTED;
   /* USER CODE END RBI_IsDCDC_1 */
 #if defined(USE_BSP_DRIVER)
   /* Important note: BSP code is board dependent
@@ -207,7 +254,7 @@ int32_t RBI_IsDCDC(void)
   /* 2/ Or implement RBI_IsDCDC here */
   int32_t retcode = IS_DCDC_SUPPORTED;
   /* USER CODE BEGIN RBI_IsDCDC_2 */
-#warning user to provide its board code or to call his board driver functions
+//#warning user to provide its board code or to call his board driver functions
   /* USER CODE END RBI_IsDCDC_2 */
   return retcode;
 #endif  /* USE_BSP_DRIVER  */
@@ -216,7 +263,12 @@ int32_t RBI_IsDCDC(void)
 int32_t RBI_GetRFOMaxPowerConfig(RBI_RFOMaxPowerConfig_TypeDef Config)
 {
   /* USER CODE BEGIN RBI_GetRFOMaxPowerConfig_1 */
-
+	  if (Config == RBI_RFO_LP_MAXPOWER){
+	    return 15; /* dBm */
+	  }
+	  else{
+	    return 22; /* dBm */
+	  }
   /* USER CODE END RBI_GetRFOMaxPowerConfig_1 */
 #if defined(USE_BSP_DRIVER)
   /* Important note: BSP code is board dependent
@@ -233,15 +285,7 @@ int32_t RBI_GetRFOMaxPowerConfig(RBI_RFOMaxPowerConfig_TypeDef Config)
   /* 2/ Or implement RBI_RBI_GetRFOMaxPowerConfig here */
   int32_t ret = 0;
   /* USER CODE BEGIN RBI_GetRFOMaxPowerConfig_2 */
-#warning user to provide its board code or to call his board driver functions
-  if (Config == RBI_RFO_LP_MAXPOWER)
-  {
-    ret = 15; /*dBm*/
-  }
-  else
-  {
-    ret = 22; /*dBm*/
-  }
+//#warning user to provide its board code or to call his board driver functions
   /* USER CODE END RBI_GetRFOMaxPowerConfig_2 */
   return ret;
 #endif  /* USE_BSP_DRIVER  */

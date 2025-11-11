@@ -58,6 +58,10 @@ void MX_SUBGHZ_Init(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define RF_SW_CTRL1_Pin GPIO_PIN_4
+#define RF_SW_CTRL1_GPIO_Port GPIOA
+#define RF_SW_CTRL2_Pin GPIO_PIN_5
+#define RF_SW_CTRL2_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
 

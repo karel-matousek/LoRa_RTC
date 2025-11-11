@@ -26,6 +26,7 @@
 
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include "radio_board_if.h"
 /* USER CODE END Includes */
 
 /* External variables ---------------------------------------------------------*/
@@ -40,11 +41,11 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define BEACON_FREQUENCY 	869525000UL	// Frequency 869525 kHz
+#define BEACON_FREQUENCY 	869525000	// Frequency 869525 kHz
 #define BEACON_BW			0			// Bandwidth 125 kHz
 #define BEACON_SF			9			// Spreading factor 9
 #define BEACON_CR			1			// Code rate 4/5
-#define BEACON_PREAMBLE		10			// Preamble 10 symbols
+#define BEACON_PREAMBLE		8			// Preamble 8 symbols
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -100,6 +101,9 @@ void SubghzApp_Init(void)
   /* USER CODE BEGIN SubghzApp_Init_1 */
 	printf("SubghzApp_Init: initializing radio for LoRaWAN beacon listening\r\n");
 
+	RBI_Init();
+	RBI_ConfigRFSwitch(RBI_SWITCH_RX);
+
   //memset(&RadioEvents, 0, sizeof(RadioEvents));	// Clear radio memory
 
   /* USER CODE END SubghzApp_Init_1 */
@@ -119,14 +123,26 @@ void SubghzApp_Init(void)
   Radio.SetChannel(BEACON_FREQUENCY);
 
   // Receive parameters configuration
-  Radio.SetRxConfig(MODEM_LORA, BEACON_BW, BEACON_SF, BEACON_CR, 0, BEACON_PREAMBLE, 0, false, 0, false, false, 0, false, true);
+  Radio.SetRxConfig(MODEM_LORA, 		// Modem: 								LoRa
+		  	  	  	BEACON_BW, 			// Bandwidth: 							125 kHz
+					BEACON_SF, 			// Spreading factor: 					9
+					BEACON_CR, 			// Coderate: 							4/5
+					0, 					// BandwidthAfc (FSK only): 			0 (N/A)
+					BEACON_PREAMBLE, 	// Preamble length: 					8
+					0, 					// Timeout symbols: 					0
+					false, 				// Packet length: 						variable
+					0, 					// Payload length: 						0
+					true, 				// CRC: 								on
+					false, 				// Frequency hopping: 					off
+					0, 					// Number of symbols between each hop: 	0
+					true,		 		// IQ signal: 							inverted
+					true);				// Reception mode: 						continuous
 
-  // Set public network syncword (0x3444)
-  Radio.Write(0x0740, 0x34);	// Maybe swap?
-  Radio.Write(0x0741, 0x44);	// Maybe swap?
+  // Set public network syncword (0x34)
+  Radio.Write(REG_LR_SYNCWORD, 0x34);
 
   // Start continuous receive
-  Radio.Rx(0);
+  Radio.RxBoosted(0);
   printf("RX activated\r\n");
 
   /* USER CODE END SubghzApp_Init_2 */
@@ -141,7 +157,7 @@ static void OnTxDone(void)
 {
   /* USER CODE BEGIN OnTxDone */
 	printf("Radio: TX done\r\n");
-	Radio.Rx(0);
+	Radio.RxBoosted(0);
   /* USER CODE END OnTxDone */
 }
 
@@ -157,7 +173,7 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 	}
 	printf("\r\n========================\r\n");
 
-	Radio.Rx(0);
+	Radio.RxBoosted(0);
   /* USER CODE END OnRxDone */
 }
 
@@ -165,7 +181,7 @@ static void OnTxTimeout(void)
 {
   /* USER CODE BEGIN OnTxTimeout */
 	printf("TX timeout\r\n");
-	Radio.Rx(0);
+	Radio.RxBoosted(0);
   /* USER CODE END OnTxTimeout */
 }
 
@@ -173,7 +189,7 @@ static void OnRxTimeout(void)
 {
   /* USER CODE BEGIN OnRxTimeout */
 	printf("RX timeout\n\r");
-	Radio.Rx(0);
+	Radio.RxBoosted(0);
   /* USER CODE END OnRxTimeout */
 }
 
@@ -181,7 +197,7 @@ static void OnRxError(void)
 {
   /* USER CODE BEGIN OnRxError */
 	printf("RX error\n\r");
-	Radio.Rx(0);
+	Radio.RxBoosted(0);
   /* USER CODE END OnRxError */
 }
 
