@@ -66,20 +66,20 @@ int32_t RBI_Init(void)
 {
   /* USER CODE BEGIN RBI_Init_1 */
 
-	  GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-	  __HAL_RCC_GPIOA_CLK_ENABLE();
-
-	  GPIO_InitStruct.Pin = RF_SW_CTRL1_PIN | RF_SW_CTRL2_PIN;
-	  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	  GPIO_InitStruct.Pull = GPIO_NOPULL;
-	  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	  HAL_GPIO_Init(RF_SW_CTRL_PORT, &GPIO_InitStruct);
-
-	  HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL1_PIN, GPIO_PIN_RESET);
-	  HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL2_PIN, GPIO_PIN_RESET);
-
-	  return 0;
+//	  GPIO_InitTypeDef GPIO_InitStruct = {0};
+//
+//	  __HAL_RCC_GPIOA_CLK_ENABLE();
+//
+//	  GPIO_InitStruct.Pin = RF_SW_CTRL1_PIN | RF_SW_CTRL2_PIN;
+//	  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+//	  GPIO_InitStruct.Pull = GPIO_NOPULL;
+//	  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+//	  HAL_GPIO_Init(RF_SW_CTRL_PORT, &GPIO_InitStruct);
+//
+//	  HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL1_PIN, GPIO_PIN_RESET);
+//	  HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL2_PIN, GPIO_PIN_RESET);
+//
+//	  return 0;
 
   /* USER CODE END RBI_Init_1 */
 #if defined(USE_BSP_DRIVER)
@@ -133,32 +133,32 @@ int32_t RBI_DeInit(void)
 int32_t RBI_ConfigRFSwitch(RBI_Switch_TypeDef Config)
 {
   /* USER CODE BEGIN RBI_ConfigRFSwitch_1 */
-
-	  switch (Config)
-	  {
-	    case RBI_SWITCH_OFF:
-	    	HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL1_PIN, GPIO_PIN_RESET);
-	    	HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL2_PIN, GPIO_PIN_RESET);
-	      break;
-
-	    case RBI_SWITCH_RX:
-	      HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL1_PIN, GPIO_PIN_SET);
-	      HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL2_PIN, GPIO_PIN_RESET);
-	      break;
-
-	    case RBI_SWITCH_RFO_LP:
-	      HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL1_PIN, GPIO_PIN_RESET);
-	      HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL2_PIN, GPIO_PIN_SET);
-	      break;
-
-	    case RBI_SWITCH_RFO_HP:
-	      HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL1_PIN, GPIO_PIN_SET);
-	      HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL2_PIN, GPIO_PIN_SET);
-	      break;
-
-	    default:
-	      break;
-	  }
+//
+//	  switch (Config)
+//	  {
+//	    case RBI_SWITCH_OFF:
+//	    	HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL1_PIN, GPIO_PIN_RESET);
+//	    	HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL2_PIN, GPIO_PIN_RESET);
+//	      break;
+//
+//	    case RBI_SWITCH_RX:
+//	      HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL1_PIN, GPIO_PIN_SET);
+//	      HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL2_PIN, GPIO_PIN_RESET);
+//	      break;
+//
+//	    case RBI_SWITCH_RFO_LP:
+//	      HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL1_PIN, GPIO_PIN_RESET);
+//	      HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL2_PIN, GPIO_PIN_SET);
+//	      break;
+//
+//	    case RBI_SWITCH_RFO_HP:
+//	      HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL1_PIN, GPIO_PIN_SET);
+//	      HAL_GPIO_WritePin(RF_SW_CTRL_PORT, RF_SW_CTRL2_PIN, GPIO_PIN_SET);
+//	      break;
+//
+//	    default:
+//	      break;
+//	  }
   /* USER CODE END RBI_ConfigRFSwitch_1 */
 #if defined(USE_BSP_DRIVER)
 

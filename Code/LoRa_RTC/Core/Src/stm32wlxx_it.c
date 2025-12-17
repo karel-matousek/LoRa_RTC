@@ -22,6 +22,7 @@
 #include "stm32wlxx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "radio.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -234,7 +235,8 @@ void RTC_Alarm_IRQHandler(void)
 void SUBGHZ_Radio_IRQHandler(void)
 {
   /* USER CODE BEGIN SUBGHZ_Radio_IRQn 0 */
-
+	Radio.IrqProcess();
+	HAL_Delay(10);
   /* USER CODE END SUBGHZ_Radio_IRQn 0 */
   HAL_SUBGHZ_IRQHandler(&hsubghz);
   /* USER CODE BEGIN SUBGHZ_Radio_IRQn 1 */
@@ -243,9 +245,5 @@ void SUBGHZ_Radio_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
-//void SUBGHZ_Radio_IRQHandler(void)
-//{
-//    HAL_SUBGHZ_IRQHandler(&hsubghz);
-//}
 
 /* USER CODE END 1 */

@@ -1,0 +1,25 @@
+# Ignorovat binarni soubory a cely vystupni adresar
+Debug/
+Release/
+*.elf
+*.bin
+*.hex
+*.map
+*.list
+*.su
+*.cyclo
+*.o
+*.d
+
+# Ignorovat konfiguracni soubory IDE a nastaveni
+.metadata/
+.settings/
+.vscode/
+
+# Ignorovat systemove soubory
+*~
+*.bak
+# Windows
+Thumbs.db
+# macOS
+.DS_Store
