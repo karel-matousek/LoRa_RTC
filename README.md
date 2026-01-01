@@ -1,4 +1,2 @@
 # LoRa_RTC
-Bachelor's thesis regarding using LoRaWAN to make real time clock device. This project uses STM32WLE5JC as the main controler. 
-
-git test 123
+This thesis pertains to the development and design of a LoRaWAN Class-B beacon receiver. The goal of the device is to extract and decode the time information contained in the received message, display it using an OLED display, and generate a 1pps output signal.
