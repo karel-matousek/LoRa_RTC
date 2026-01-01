@@ -213,7 +213,7 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 		}
 
 		// Time CRC data
-		printf("\r\nTime CRC data:       ");
+		printf("\r\nTime CRC data: ");
 		for (uint8_t i = 0; i < 2; i++)
 		{
 			timeCrc[i] = payload[i+6];
@@ -242,7 +242,7 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 			timeUnformatted |= timeData[0];
 
 			timeUnformatted += 3600; // + 1 hour (Czech Republic time)
-			timeUnformatted -= 16;	 // - 16 seconds
+			// timeUnformatted -= 18;	 // - 18 seconds
 
 			uint32_t secondsInDay = 86400;
 
@@ -267,7 +267,13 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 		else
 		{
 			printf("\r\n-- TIME INVALID --\r\n");
-		}
+
+			sprintf(text_buffer, "Time invalid");
+			ssd1306_SetCursor(2, 30);
+			ssd1306_WriteString(text_buffer, Font_6x8, White);
+
+			ssd1306_UpdateScreen();
+}
 
 		// End of message
 		printf("\r\n=======================\r\n");
