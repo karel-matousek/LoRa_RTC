@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "STM32WLE5JC")(type "KiCad")(uri "${KIPRJMOD}/STM32WLE5JC.kicad_sym")(options "")(descr ""))
+)
