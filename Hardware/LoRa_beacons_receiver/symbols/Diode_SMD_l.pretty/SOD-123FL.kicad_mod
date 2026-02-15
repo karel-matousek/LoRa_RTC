@@ -102,7 +102,7 @@
 			(type solid)
 		)
 		(fill no)
-		(layer "Margin")
+		(layer "F.CrtYd")
 		(uuid "48844764-910f-45d8-b543-6b678124c25d")
 	)
 	(fp_text user "${REFERENCE}"
@@ -134,7 +134,7 @@
 		(uuid "d1d54fdc-e563-46a6-b5f1-348734d57c69")
 	)
 	(embedded_fonts no)
-	(model "C:/Users/DELL_KM/Desktop/Bakalarka/LoRa_RTC/Hardware/KiCAD_libraries/Diode_SMD_l.pretty/MBR130LSFT1G.stp"
+	(model "${KIPRJMOD}/symbols/Diode_SMD_l.pretty/MBR130LSFT1G.stp"
 		(offset
 			(xyz 0 0 0)
 		)

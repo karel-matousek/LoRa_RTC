@@ -332,7 +332,7 @@
 		(uuid "4a5fbf9b-d67d-4527-8211-b6576444e5da")
 	)
 	(embedded_fonts no)
-	(model "C:/Users/DELL_KM/Desktop/Bakalarka/LoRa_RTC/Hardware/KiCAD_libraries/STM32_module_l/STM32_module_l.pretty/STM32WLE5JC_3D.stp"
+	(model "${KIPRJMOD}/symbols/STM32_module_l.pretty/STM32WLE5JC_3D.stp"
 		(offset
 			(xyz 0 0 2.5)
 		)
