@@ -1,0 +1,148 @@
+(footprint "SOD-123FL"
+	(version 20241229)
+	(generator "pcbnew")
+	(generator_version "9.0")
+	(layer "F.Cu")
+	(property "Reference" "REF**"
+		(at 0 -1.8 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(uuid "1ff13746-9c7c-49d0-a78e-253f7beb46b7")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.1)
+			)
+		)
+	)
+	(property "Value" "SOD-123FL"
+		(at 0 1.9 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "6d827421-141e-4069-a20d-70c2335deaf5")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "ce87d73c-332f-401a-9a1b-b351cd4dc4d8")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "6eae635d-b6dc-413a-843e-f6604235e8a7")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr smd)
+	(fp_line
+		(start -2.4 -1)
+		(end -2.4 1)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "cd7a3ce8-67a6-4bcd-a2ee-8c7e39f3a12b")
+	)
+	(fp_line
+		(start -2.4 -1)
+		(end 1.4 -1)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "7c335f42-0200-4083-8fdd-a2b9f7d51889")
+	)
+	(fp_line
+		(start -2.4 1)
+		(end -2.4 -1)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "78bde977-547e-4f83-ab81-f486cc2b349c")
+	)
+	(fp_line
+		(start -2.4 1)
+		(end 1.4 1)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "2c12f442-c35e-4928-9422-841a66d544b0")
+	)
+	(fp_rect
+		(start -2.4 -1)
+		(end 2.4 1)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "48844764-910f-45d8-b543-6b678124c25d")
+	)
+	(fp_text user "${REFERENCE}"
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "1196a5ee-c8af-48dd-b95b-255945844bae")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(pad "1" smd roundrect
+		(at -1.475 0)
+		(size 1.25 1.25)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(roundrect_rratio 0.15)
+		(thermal_bridge_angle 45)
+		(uuid "0f57123b-4608-4c23-9fc2-5857dfec3a0d")
+	)
+	(pad "2" smd roundrect
+		(at 1.475 0)
+		(size 1.25 1.25)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(roundrect_rratio 0.15)
+		(thermal_bridge_angle 45)
+		(uuid "d1d54fdc-e563-46a6-b5f1-348734d57c69")
+	)
+	(embedded_fonts no)
+	(model "${KIPRJMOD}/symbols/Diode_SMD_l.pretty/MBR130LSFT1G.stp"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
+)
