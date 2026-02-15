@@ -255,7 +255,7 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 
 			// OLED
 			sprintf(text_buffer, "%02u:%02u:%02u\r\n", hours, minutes, seconds);
-			ssd1306_SetCursor(0, 0);
+			ssd1306_SetCursor(2, 0);
 			ssd1306_WriteString(text_buffer, Font_11x18, White);
 
 			sprintf(text_buffer, "Time valid");

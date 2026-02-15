@@ -1,0 +1,39 @@
+# === KiCad EDA ===
+# Záložní soubory a složky (včetně tvého -backups/)
+**/*-backups/
+*.bak
+*.kicad_pcb-bak
+*.kicad_sch-bak
+
+# Lokální nastavení projektu (barvy, rozložení oken)
+*.kicad_prl
+
+# Pomocné a dočasné soubory
+fp-info-cache
+*.lck
+
+# === C/C++ Vývoj (STM32/IDE) ===
+# Ignorovat binarni soubory a cely vystupni adresar
+Debug/
+Release/
+*.elf
+*.bin
+*.hex
+*.map
+*.list
+*.su
+*.cyclo
+*.o
+*.d
+
+# Ignorovat konfiguracni soubory IDE a nastaveni
+.metadata/
+.settings/
+.vscode/
+
+# === Systemove soubory ===
+*~
+# Windows
+Thumbs.db
+# macOS
+.DS_Store
