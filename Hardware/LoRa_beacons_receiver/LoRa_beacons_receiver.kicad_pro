@@ -43,9 +43,9 @@
         },
         "silk_line_width": 0.1,
         "silk_text_italic": false,
-        "silk_text_size_h": 1.0,
-        "silk_text_size_v": 1.0,
-        "silk_text_thickness": 0.15,
+        "silk_text_size_h": 0.7,
+        "silk_text_size_v": 0.7,
+        "silk_text_thickness": 0.1,
         "silk_text_upright": false,
         "zones": {
           "min_clearance": 0.5
@@ -245,11 +245,19 @@
         ""
       ],
       [
+        "lib_symbol_mismatch|762000|736600|cc971626-f4ea-434f-9c18-ae75b48813c5|00000000-0000-0000-0000-000000000000|||",
+        ""
+      ],
+      [
         "lib_symbol_mismatch|762000|762000|cc971626-f4ea-434f-9c18-ae75b48813c5|00000000-0000-0000-0000-000000000000|||",
         ""
       ],
       [
         "lib_symbol_mismatch|838200|2565400|b5a6f94f-f6aa-46dc-9a3e-0faa4d013ecd|00000000-0000-0000-0000-000000000000|||",
+        ""
+      ],
+      [
+        "pin_not_driven|2590800|762000|c5cfb2cf-fdb4-41f1-97c7-f901794bb8bd|00000000-0000-0000-0000-000000000000|/866c6744-6e32-439e-8713-c6a6cd9ffc29|/866c6744-6e32-439e-8713-c6a6cd9ffc29|",
         ""
       ]
     ],
