@@ -799,12 +799,12 @@
 			(uuid "6a513b20-336d-48d8-bbe9-8d3a24a0ab8c")
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/symbols/STM32_module_l.pretty/STM32WLE5JC_3D.stp"
+		(model "${KIPRJMOD}/3dmodels/STM32WLE5JC_3D_l.stp"
 			(offset
 				(xyz 0 0 2.5)
 			)
 			(scale
-				(xyz 0.0385 0.0385 0.0385)
+				(xyz 0.0395 0.0395 0.0395)
 			)
 			(rotate
 				(xyz 90 -0 -180)
@@ -2960,7 +2960,7 @@
 			(uuid "94603046-5c31-40ae-a88d-dccca8dfde99")
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/symbols/Diode_SMD_l.pretty/MBR130LSFT1G.stp"
+		(model "${KIPRJMOD}/3dmodels/MBR130LSFT1G_l.stp"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -6212,7 +6212,7 @@
 				(xyz 0 0 0)
 			)
 		)
-		(model "${KIPRJMOD}/symbols/Display_l.pretty/OLED_0_96INCH.step"
+		(model "${KIPRJMOD}/3dmodels/OLED_0_96INCH_l.step"
 			(offset
 				(xyz 0 -9.15 11.5)
 			)
@@ -7155,18 +7155,18 @@
 			)
 		)
 	)
-	(footprint "Connector_Coaxial_g:RF2-143-T-17-50-G"
+	(footprint "Connector_Coaxial_l:RF2-143-T-17-50-G_l"
 		(layer "F.Cu")
 		(uuid "b67543bc-dd3e-49b5-acea-1ea17f9fea5f")
 		(at 164.9 74 90)
 		(property "Reference" "J1"
-			(at 0 -5.5066 90)
+			(at -0.325 -6.635 90)
 			(layer "F.SilkS")
 			(uuid "f5e0cf02-d051-4dcc-b956-9ff829e086fc")
 			(effects
 				(font
-					(size 0.7 0.7)
-					(thickness 0.1)
+					(size 1 1)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -7218,7 +7218,7 @@
 				(type solid)
 			)
 			(layer "B.CrtYd")
-			(uuid "40686b65-2559-4405-855d-578259118f9f")
+			(uuid "7cd3a130-8629-4784-b1a9-de28ee9ca8b2")
 		)
 		(fp_line
 			(start -3.6282 -4.2632)
@@ -7228,7 +7228,7 @@
 				(type solid)
 			)
 			(layer "B.CrtYd")
-			(uuid "9de7c4a6-d017-4848-9c9c-2520c644a49a")
+			(uuid "fa199886-cd89-47b8-89bf-8ef06f0d78e0")
 		)
 		(fp_line
 			(start 3.6282 9.7496)
@@ -7238,7 +7238,7 @@
 				(type solid)
 			)
 			(layer "B.CrtYd")
-			(uuid "ef78b057-dad9-4991-b508-aa86d1e52bc2")
+			(uuid "a5764657-8bde-4a7c-b024-f566de993542")
 		)
 		(fp_line
 			(start -3.6282 9.7496)
@@ -7248,7 +7248,7 @@
 				(type solid)
 			)
 			(layer "B.CrtYd")
-			(uuid "a199f92e-825c-4167-ac33-e9ed44ac91f3")
+			(uuid "d5a3de0b-3584-46ec-809d-765daec69345")
 		)
 		(fp_line
 			(start 3.6282 -4.2632)
@@ -7258,7 +7258,7 @@
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "41ae01dd-d2d2-41cb-9772-71b19ebe8a4b")
+			(uuid "1ff1fc2c-37d6-4297-8357-92f41219ac28")
 		)
 		(fp_line
 			(start -3.6282 -4.2632)
@@ -7268,7 +7268,7 @@
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "fde033de-c0f0-4bf7-bc35-a9595e05c605")
+			(uuid "f2e5f837-2cf5-46ae-a328-a27342deea20")
 		)
 		(fp_line
 			(start 3.6282 9.7496)
@@ -7278,7 +7278,7 @@
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "9df3d5e7-cdb4-48f3-9e40-5b234fd84a02")
+			(uuid "121608ae-ca2c-4d26-9464-f06a7fce75e5")
 		)
 		(fp_line
 			(start -3.6282 9.7496)
@@ -7288,7 +7288,7 @@
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "0cb95909-af27-45d9-9de8-5eac3414b56d")
+			(uuid "205d25c6-19ca-487d-b2b9-dac93208c0d4")
 		)
 		(fp_line
 			(start 3.175 0)
@@ -7298,7 +7298,7 @@
 				(type solid)
 			)
 			(layer "B.Fab")
-			(uuid "fd82501e-7e76-46ea-b28f-2109c742b59c")
+			(uuid "d80ed263-72c5-4d28-bc5e-fe449eb21f81")
 		)
 		(fp_line
 			(start 3.175 0)
@@ -7308,7 +7308,7 @@
 				(type solid)
 			)
 			(layer "B.Fab")
-			(uuid "b834914a-3005-42f1-b62c-f712c93574c3")
+			(uuid "fcc0e054-944b-4b08-982b-92e8e4ae06d6")
 		)
 		(fp_line
 			(start -3.175 0)
@@ -7318,7 +7318,7 @@
 				(type solid)
 			)
 			(layer "B.Fab")
-			(uuid "41ee5547-ed59-4863-aa71-df5440e47df6")
+			(uuid "522d4c26-e42f-4c32-a38d-834d1c6c2622")
 		)
 		(fp_line
 			(start -3.175 9.4996)
@@ -7328,7 +7328,7 @@
 				(type solid)
 			)
 			(layer "B.Fab")
-			(uuid "6b1b817d-b8b5-4cbe-8555-f0cf2617678e")
+			(uuid "0c708e73-36eb-4f57-b7da-0f1e6609d0ce")
 		)
 		(fp_line
 			(start 3.175 0)
@@ -7338,7 +7338,7 @@
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "b89d7194-68b3-4caf-909c-21cf7a8c4fa3")
+			(uuid "60744d75-a116-4fc8-b92b-f9e58feb1a1a")
 		)
 		(fp_line
 			(start 3.175 0)
@@ -7348,7 +7348,7 @@
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "4d372434-0580-421f-92dc-e5527602566d")
+			(uuid "3808f0ff-76c4-4d4d-9e17-26c62fdce793")
 		)
 		(fp_line
 			(start -3.175 0)
@@ -7358,7 +7358,7 @@
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "4242ad49-1e0a-4f02-ae9b-7abc1eba7ad4")
+			(uuid "02b624c3-9d49-40b3-bd7b-cf7b02bf2a2a")
 		)
 		(fp_line
 			(start -3.175 0)
@@ -7368,7 +7368,7 @@
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "22d7838f-d4b7-4a2f-a847-c4eed1c614a3")
+			(uuid "d82624a0-28b2-4aca-a6d2-da0551813f56")
 		)
 		(fp_line
 			(start -3.175 9.4996)
@@ -7378,7 +7378,7 @@
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "2f4b6b28-5961-48d1-954e-e2f9c99ebd41")
+			(uuid "de866f1f-aca4-41ee-8c1b-c98fe03cb53c")
 		)
 		(fp_text user "PCB EDGE"
 			(at 3.75 -0.25 90)
@@ -7419,7 +7419,7 @@
 			(pinfunction "Ext")
 			(pintype "passive")
 			(solder_mask_margin 0.102)
-			(uuid "e174eadc-85a8-4855-bec2-78c5217d646b")
+			(uuid "60ff100b-9bb7-473d-abc7-ad1ac8dd89ef")
 		)
 		(pad "2" smd rect
 			(at 2.7813 -2.0066 90)
@@ -7429,7 +7429,7 @@
 			(pinfunction "Ext")
 			(pintype "passive")
 			(solder_mask_margin 0.102)
-			(uuid "e174eadc-85a8-4855-bec2-78c5217d646b")
+			(uuid "182f0d48-7536-4f7f-b064-f1c2311339d2")
 		)
 		(pad "2" smd rect
 			(at 2.7813 -2.0066 90)
@@ -7439,10 +7439,10 @@
 			(pinfunction "Ext")
 			(pintype "passive")
 			(solder_mask_margin 0.102)
-			(uuid "e174eadc-85a8-4855-bec2-78c5217d646b")
+			(uuid "da710278-111f-4479-b43b-1199065c571b")
 		)
 		(embedded_fonts no)
-		(model "C:/Users/DELL_KM/Documents/KiCad/9.0/3dmodels/RF2-143-T-17-50-G.step"
+		(model "${KIPRJMOD}/3dmodels/RF2-143-T-17-50-G_l.step"
 			(offset
 				(xyz 0 0 0)
 			)
