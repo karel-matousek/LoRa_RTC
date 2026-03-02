@@ -106,10 +106,10 @@
 		(end 6 6)
 		(stroke
 			(width 0.1)
-			(type default)
+			(type solid)
 		)
 		(fill no)
-		(layer "Margin")
+		(layer "F.CrtYd")
 		(uuid "a20e91be-3c74-405a-baa1-59bd8d9b4afb")
 	)
 	(fp_line
@@ -332,7 +332,7 @@
 		(uuid "4a5fbf9b-d67d-4527-8211-b6576444e5da")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/symbols/STM32_module_l.pretty/STM32WLE5JC_3D.stp"
+	(model "${KIPRJMOD}/3dmodels/STM32WLE5JC_3D_l.stp"
 		(offset
 			(xyz 0 0 2.5)
 		)
