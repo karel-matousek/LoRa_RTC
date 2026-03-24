@@ -9032,6 +9032,15 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer part number" "74LVC1G17GV.125"
+			(at 60.96 246.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "4"
 			(uuid "ea83237f-2ae7-4fd2-a993-75b84f6ef305")
 		)
@@ -9168,6 +9177,15 @@
 			)
 		)
 		(property "Description" "USB to UART master bridge, QFN-28"
+			(at 154.94 170.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer part number" "CP2102-GM"
 			(at 154.94 170.18 0)
 			(effects
 				(font
@@ -9589,6 +9607,15 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer part number" "WR08X5101FTL"
+			(at 60.96 179.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "eb3cd1da-24cd-46c4-88fd-e04a9cba511f")
 		)
@@ -9650,6 +9677,15 @@
 		)
 		(property "Description" "Resistor"
 			(at 90.17 43.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer part number" "CRCW08054K70FKTABC"
+			(at 90.17 43.18 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9737,6 +9773,15 @@
 			)
 		)
 		(property "Name" "LTST-C171KRKT"
+			(at 38.1 262.89 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer part number" "LTST-C171KRKT"
 			(at 38.1 262.89 90)
 			(effects
 				(font
@@ -9897,6 +9942,15 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer part number" "LTST-C171KRKT"
+			(at 154.94 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "5bfebc04-80ad-4271-ac2c-fcef59ff56d6")
 		)
@@ -9976,6 +10030,15 @@
 		)
 		(property "Name" "LTST-C171KRKT"
 			(at 154.94 71.12 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer part number" "LTST-C171KRKT"
+			(at 154.94 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10182,6 +10245,15 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer part number" "CRGH0805J22R"
+			(at 176.53 142.24 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "7027ef7f-7421-42f8-91e2-ff165116f3d5")
 		)
@@ -10310,6 +10382,15 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
+			(at 88.9 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer part number" "CC0805KKX7R7BB105"
 			(at 88.9 77.47 0)
 			(effects
 				(font
@@ -10520,6 +10601,15 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer part number" "CC0805KKX7R7BB105"
+			(at 127 128.27 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "95fe9ed2-e629-43c4-8ba8-f058bfe07454")
 		)
@@ -10553,7 +10643,7 @@
 				)
 			)
 		)
-		(property "Value" "56R"
+		(property "Value" "100R"
 			(at 170.18 85.09 90)
 			(effects
 				(font
@@ -10581,6 +10671,15 @@
 		)
 		(property "Description" "Resistor"
 			(at 170.18 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer part number" "CRCW0805100RFKTABC"
+			(at 170.18 88.9 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10782,6 +10881,15 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x05, script generated"
+			(at 185.42 266.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer part number" "ZL262-5SG"
 			(at 185.42 266.7 0)
 			(effects
 				(font
@@ -10999,6 +11107,15 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer part number" "USB4105-GF-A-120"
+			(at 38.1 157.48 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "A12"
 			(uuid "c29a0b74-65fc-4edd-bfb0-fbfb6723d02b")
 		)
@@ -11180,6 +11297,15 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer part number" "08055C104JAT2A"
+			(at 139.7 128.27 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "efb6fb3f-0bb6-479e-87ed-b0fbfc113fa2")
 		)
@@ -11240,6 +11366,15 @@
 			)
 		)
 		(property "Description" ""
+			(at 279.4 55.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer part number" "-"
 			(at 279.4 55.88 0)
 			(effects
 				(font
@@ -11460,6 +11595,15 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer part number" "MBR130LSFT1G"
+			(at 34.29 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "44b78f85-2171-4de3-a6e4-9d2b08eaea2d")
 		)
@@ -11596,6 +11740,15 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer part number" "-"
+			(at 124.46 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(instances
 			(project ""
 				(path "/866c6744-6e32-439e-8713-c6a6cd9ffc29"
@@ -11650,6 +11803,15 @@
 			)
 		)
 		(property "Description" "Push button switch, generic, two pins"
+			(at 45.72 27.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer part number" "TACT4101-11250-A"
 			(at 45.72 27.94 0)
 			(effects
 				(font
@@ -11785,6 +11947,15 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
+			(at 99.06 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer part number" "08055C104JAT2A"
 			(at 99.06 77.47 0)
 			(effects
 				(font
@@ -12124,6 +12295,15 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer part number" "ZL263-2SG"
+			(at 81.28 246.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "606f583c-63c6-47b8-827f-fe25db867375")
 		)
@@ -12186,6 +12366,15 @@
 			)
 		)
 		(property "Description" "Mounting Hole without connection"
+			(at 124.46 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer part number" "-"
 			(at 124.46 45.72 0)
 			(effects
 				(font
@@ -12453,6 +12642,15 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer part number" "08055C104JAT2A"
+			(at 53.34 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "d4cfb47e-852c-48dd-90bc-8cee83e6a424")
 		)
@@ -12587,6 +12785,15 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer part number" "ERJP06J471V"
+			(at 62.23 27.94 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "5e51699d-5a6a-4c29-a452-b6969a452809")
 		)
@@ -12649,6 +12856,15 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
+			(at 43.18 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer part number" "CC0805KKX7R7BB105"
 			(at 43.18 77.47 0)
 			(effects
 				(font
@@ -12830,7 +13046,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Fuse:Fuse_0805_2012Metric_Pad1.15x1.40mm_HandSolder"
+		(property "Footprint" "Fuse:Fuse_0603_1608Metric_Pad1.05x0.95mm_HandSolder"
 			(at 63.5 144.018 90)
 			(effects
 				(font
@@ -12850,6 +13066,15 @@
 		)
 		(property "Description" "Fuse"
 			(at 63.5 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer part number" "ERBRE1R00V"
+			(at 63.5 142.24 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12993,6 +13218,15 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer part number" "SP0503BAHTG-LF"
+			(at 83.82 170.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "51778726-cf3b-45ae-8d50-59560bd63b0a")
 		)
@@ -13069,6 +13303,15 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer part number" "-"
+			(at 144.78 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(instances
 			(project "LoRa_beacons_receiver"
 				(path "/866c6744-6e32-439e-8713-c6a6cd9ffc29"
@@ -13122,6 +13365,15 @@
 			)
 		)
 		(property "Description" "Generic connector, double row, 02x09, counter clockwise pin numbering scheme (similar to DIP package numbering), script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 132.08 243.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer part number" "ZL262-9SG"
 			(at 132.08 243.84 0)
 			(effects
 				(font
@@ -13245,6 +13497,15 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer part number" "CRGH0805J22R"
+			(at 176.53 144.78 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "8da258a3-7d79-4544-925c-2cc318ff6156")
 		)
@@ -13315,6 +13576,15 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer part number" "RF2-143-T-17-50-G"
+			(at 322.58 33.02 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "34c909e4-9776-4b4c-8ce4-704d0de312cb")
 		)
@@ -13375,6 +13645,15 @@
 		)
 		(property "Description" "Unpolarized capacitor"
 			(at 176.53 154.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer part number" "08055C104JAT2A"
+			(at 176.53 154.94 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13516,6 +13795,15 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer part number" "CRCW08054K70FKTABC"
+			(at 90.17 27.94 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "cdc253c4-f300-449e-8b7e-b89f5431af14")
 		)
@@ -13578,6 +13866,15 @@
 			)
 		)
 		(property "Description" "Resistor"
+			(at 111.76 135.89 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer part number" "CRCW08054K70FKTABC"
 			(at 111.76 135.89 0)
 			(effects
 				(font
@@ -13851,6 +14148,15 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer part number" "TACT4101-11250-A"
+			(at 58.42 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "9b17f53c-6222-496e-9077-6c1619e1f65e")
 		)
@@ -14015,7 +14321,7 @@
 				)
 			)
 		)
-		(property "Value" "56R"
+		(property "Value" "100R"
 			(at 170.18 67.31 90)
 			(effects
 				(font
@@ -14043,6 +14349,15 @@
 		)
 		(property "Description" "Resistor"
 			(at 170.18 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer part number" "CRCW0805100RFKTABC"
+			(at 170.18 71.12 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14130,6 +14445,15 @@
 			)
 		)
 		(property "Name" "LTST-C171KRKT"
+			(at 116.84 87.63 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer part number" "LTST-C171KRKT"
 			(at 116.84 87.63 90)
 			(effects
 				(font
@@ -14329,6 +14653,15 @@
 			)
 		)
 		(property "Description" "600mA low dropout linear regulator, with enable pin, 3.8V-6V input voltage range, 3.3V fixed positive output, SOT-23-5"
+			(at 76.2 73.66 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer part number" "AP2112K-3.3TRG1"
 			(at 76.2 73.66 0)
 			(effects
 				(font
@@ -14547,6 +14880,15 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer part number" "-"
+			(at 144.78 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(instances
 			(project "LoRa_beacons_receiver"
 				(path "/866c6744-6e32-439e-8713-c6a6cd9ffc29"
@@ -14602,6 +14944,15 @@
 		)
 		(property "Description" "Unpolarized capacitor"
 			(at 46.99 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer part number" "08055C104JAT2A"
+			(at 46.99 233.68 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14708,7 +15059,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "56R"
+		(property "Value" "100R"
 			(at 40.64 253.9999 0)
 			(effects
 				(font
@@ -14736,6 +15087,15 @@
 			)
 		)
 		(property "Description" "Resistor"
+			(at 38.1 252.73 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer part number" "CRCW0805100RFKTABC"
 			(at 38.1 252.73 0)
 			(effects
 				(font
@@ -14844,7 +15204,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "56R"
+		(property "Value" "100R"
 			(at 119.38 78.7399 0)
 			(effects
 				(font
@@ -14872,6 +15232,15 @@
 			)
 		)
 		(property "Description" "Resistor"
+			(at 116.84 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer part number" "CRCW0805100RFKTABC"
 			(at 116.84 77.47 0)
 			(effects
 				(font
@@ -15008,6 +15377,15 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x04, script generated"
+			(at 185.42 236.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer part number" "-"
 			(at 185.42 236.22 0)
 			(effects
 				(font
@@ -15157,6 +15535,15 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer part number" "WR08X5101FTL"
+			(at 66.04 179.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "c309cfe0-1fc9-47fc-ba84-acc0521ce0a1")
 		)
@@ -15219,6 +15606,15 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
+			(at 236.22 39.37 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer part number" "TMK212AB7475KG-T"
 			(at 236.22 39.37 0)
 			(effects
 				(font
