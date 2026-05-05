@@ -56,7 +56,7 @@ void Error_Handler(void);
 void MX_SUBGHZ_Init(void);
 
 /* USER CODE BEGIN EFP */
-
+// void format_time(uint32_t time_unform, uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

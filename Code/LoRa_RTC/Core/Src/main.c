@@ -28,6 +28,8 @@
 #include "subghz_phy_app.h"
 #include "ssd1306.h"
 #include "ssd1306_fonts.h"
+#include "utils.h"
+#include "time_format.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -37,7 +39,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define DEBUG_PRINT
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -57,7 +59,10 @@ TIM_HandleTypeDef htim2;
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
+uint32_t time_unformatted_g;
+uint8_t timer_periods = 0;
 
+time_date_t td;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -118,15 +123,29 @@ int main(void)
   MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
 
-	// SubghzApp_Init();
-	printf("Radio initialized.\r\n");
+//	register_timer(&htim2);
 
+//	__HAL_TIM_SET_COUNTER(&htim2, 0);	// Reseting the timer
+//	HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_1);
+
+	// SubghzApp_Init();
+#ifdef DEBUG_PRINT
+	printf("Radio initialized.\r\n");
+#endif
 	ssd1306_Init();
 	ssd1306_Fill(Black);
 	ssd1306_UpdateScreen();
 
-	// Timer start
-	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+	char text_buffer[20];
+
+	sprintf(text_buffer, "LoRa RTC");
+	ssd1306_SetCursor(2, 0);
+	ssd1306_WriteString(text_buffer, Font_11x18, White);
+
+	ssd1306_UpdateScreen();
+
+//	__HAL_TIM_SET_COUNTER(&htim2, 0);
+//	HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_1);
 
   /* USER CODE END 2 */
 
@@ -369,9 +388,9 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 47999;
+  htim2.Init.Prescaler = 0;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 999;
+  htim2.Init.Period = 47999999;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
@@ -394,7 +413,7 @@ static void MX_TIM2_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 500;
+  sConfigOC.Pulse = 4800000;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
@@ -504,13 +523,39 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 // TIM2 Callback
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-  if (htim->Instance == TIM2) // Check that the interrupt is from TIM2
-  {
-    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
-  }
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+	if (htim->Instance == TIM2) // Check that the interrupt is from TIM2
+	{
+		time_unformatted_g ++;
+
+//		uint8_t hours;
+//		uint8_t mins;
+//		uint8_t secs;
+
+		format_time(time_unformatted_g, &td);
+
+		timer_periods ++;
+
+		// OLED
+		char text_buffer[20];
+
+		// printf("%02u:%02u:%02u\r\n", td.hours, td.minutes, td.seconds);
+
+		sprintf(text_buffer, "%02u:%02u:%02u\r\n", td.hours, td.minutes, td.seconds);
+		ssd1306_SetCursor(2, 0);
+		ssd1306_WriteString(text_buffer, Font_11x18, White);
+
+		ssd1306_UpdateScreen();
+	}
 }
+
+//void format_time(uint32_t time_unform, uint8_t *hours, uint8_t *minutes, uint8_t *seconds) {
+//	uint32_t seconds_today = time_unform % 86400;
+//	*hours = seconds_today / 3600;
+//	*minutes = (seconds_today % 3600) / 60;
+//	*seconds = (seconds_today % 3600) % 60;
+//}
+
 /* USER CODE END 4 */
 
 /**
