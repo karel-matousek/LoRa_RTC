@@ -23,6 +23,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include <inttypes.h>
+
 #include "stm32wlxx_hal_uart.h"
 #include "radio.h"
 #include "subghz_phy_app.h"
@@ -59,8 +61,9 @@ TIM_HandleTypeDef htim2;
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
-uint32_t time_unformatted_g;
-uint8_t timer_periods = 0;
+volatile uint32_t time_unformatted_g;
+volatile uint16_t timer_periods = 11;
+volatile int32_t change;
 
 time_date_t td;
 /* USER CODE END PV */
@@ -392,7 +395,7 @@ static void MX_TIM2_Init(void)
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim2.Init.Period = 47999999;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
   {
     Error_Handler();
@@ -535,7 +538,17 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		format_time(time_unformatted_g, &td);
 
 		timer_periods ++;
+/*
+		if (timer_periods == 129) {
+			uint32_t new_period = (uint32_t)((int32_t)(htim2.Init.Period) - change);
+			htim2.Instance->ARR = new_period;
+			htim2.Init.Period = new_period;
 
+#ifdef DEBUG_PRINT
+			printf("\r\nNew period: %" PRIu32 "\r\n", new_period);
+#endif
+		}
+*/
 		// OLED
 		char text_buffer[20];
 

@@ -10,8 +10,13 @@
 #include <string.h>
 #include "time_format.h"
 
+#define TIME_ZONE		1	// UTC+?
+#define SUMMER_TIME		1	// 1 - Summer time, 0 - Winter time
+#define LEAP_SECS		18	// Add leap seconds
+
 // Function for time formatting
 void format_time(uint32_t time_u, time_date_t *td) {
+	time_u += 3600 * TIME_ZONE + 3600 * SUMMER_TIME - LEAP_SECS;
 	uint32_t seconds_today = time_u % 86400;
 
 	td->hours = (uint8_t)(seconds_today / 3600);
@@ -21,6 +26,7 @@ void format_time(uint32_t time_u, time_date_t *td) {
 
 // Function for date formatting
 void format_date(uint32_t time_u, time_date_t *td) {
+	time_u += 3600 * TIME_ZONE + 3600 * SUMMER_TIME + LEAP_SECS;
 	uint32_t days_passed = (time_u / 86400) + 6;	// Days passed since Jan 1 1980
 
 	// =============== Year format ===============
