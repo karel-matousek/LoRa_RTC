@@ -224,8 +224,14 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 	}
 
 	// CRC control calculation
+	static uint16_t last_crc_result = 0;
+	static uint8_t beacon_rx_allowed_flag = 0;
 	uint16_t crc_result = time_crc_check(time_data, sizeof(time_data));
 	uint8_t *crc_bytes = (uint8_t*) &crc_result;
+
+	if(crc_result == last_crc_result) beacon_rx_allowed_flag = 0;
+	else beacon_rx_allowed_flag = 1;
+	last_crc_result = crc_result;
 
 /*
 #ifdef DEBUG_PRINT
@@ -258,7 +264,7 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 */
 	/*======================================================== TIME DECODING AND FORMATTING ========================================================*/
 
-	if (crc_bytes[0] == time_crc[0] && crc_bytes[1] == time_crc[1] && timer_periods > 10) {
+	if (crc_bytes[0] == time_crc[0] && crc_bytes[1] == time_crc[1] && beacon_rx_allowed_flag == 1) {
 
 //		HAL_UART_Transmit(&huart1, (uint8_t*)"BEACON_RCVD\r\n", 13, 100);
 
@@ -285,7 +291,11 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 //		time_unformatted += 3600 * TIME_ZONE + 3600 * SUMMER_TIME + LEAP_SECS;
 		__disable_irq();
 		uint32_t ticks_since_last_rst = __HAL_TIM_GET_COUNTER(&htim2);
-		uint16_t timer_periods_local = timer_periods;
+		uint16_t periods_measured = timer_periods;
+//		uint16_t timer_periods_local = timer_periods;
+//		static uint16_t last_timer_periods = 0;
+//		uint16_t periods_since_last_beacon = timer_periods_local - last_timer_periods;
+//		last_timer_periods = timer_periods_local;
 
 //		if (__HAL_TIM_GET_FLAG(&htim2, TIM_FLAG_UPDATE)) {
 //
@@ -311,39 +321,45 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 		static int32_t i_term = 0;
 		int32_t error_ms = 0;
 
+		secs_between_beacons = (uint16_t)(time_unformatted - prev_received_time);
+		if (secs_between_beacons == 0) secs_between_beacons = 128;
+
 		// Timer period configuration
 		static uint32_t prev_ticks_since_last_rst = 0;
 
 		if (timer_running_flag > 0) {
-			ticks_in_period = htim2.Init.Period;
+//			ticks_in_period = htim2.Init.Period;
+			ticks_in_period = __HAL_TIM_GET_AUTORELOAD(&htim2);
 
-			secs_between_beacons = (uint16_t)(time_unformatted - prev_received_time);
+			int32_t phase_error_ticks = ((int32_t)periods_measured - (int32_t)secs_between_beacons) * (int32_t)ticks_in_period + (int32_t)ticks_since_last_rst;
+			error_ms = phase_error_ticks / 48000;
+			diff = phase_error_ticks;
 
-			int64_t raw_hw_ticks = (int64_t)ticks_in_period * (int64_t)timer_periods_local + (int64_t)ticks_since_last_rst;
-			total_ticks = raw_hw_ticks - (int64_t)prev_ticks_since_last_rst;
-			prev_ticks_since_last_rst = ticks_since_last_rst;
-
-			correct_ticks = (int64_t)NOMINAL_PERIOD * (int64_t)secs_between_beacons;
-			diff = total_ticks - correct_ticks;
-			int32_t offset_correction = (int32_t)(diff / 4096);
 			error_per_sec = (int32_t)(diff / secs_between_beacons);
-			integral_error += error_per_sec + offset_correction;
-
-			error_ms = (int32_t)(diff / 48000); // error in ms
+			integral_error += error_per_sec; // + offset_correction;
 
 			if (integral_error > MAX_INTEGRAL) integral_error = MAX_INTEGRAL;
 			if (integral_error < -MAX_INTEGRAL) integral_error = -MAX_INTEGRAL;
 
 			p_term = error_per_sec / 32;
 			i_term = integral_error / 512;
+//
+//			int64_t raw_hw_ticks = (int64_t)ticks_in_period * (int64_t)periods_since_last_beacon + (int64_t)ticks_since_last_rst;
+//			total_ticks = raw_hw_ticks - (int64_t)prev_ticks_since_last_rst;
+//			prev_ticks_since_last_rst = ticks_since_last_rst;
+//
+//			correct_ticks = (int64_t)NOMINAL_PERIOD * (int64_t)secs_between_beacons;
+//			int32_t offset_correction = (int32_t)(diff / 4096);
+//
+//			error_ms = (int32_t)(diff / 48000); // error in ms
 
 			int32_t total_correction = p_term + i_term;
 			if (total_correction > MAX_CORRECTION) total_correction = MAX_CORRECTION;
 			if (total_correction < -MAX_CORRECTION) total_correction = -MAX_CORRECTION;
 
-//			uint32_t new_period = (uint32_t)((int32_t)NOMINAL_PERIOD + total_correction);
-//			htim2.Init.Period = new_period;
-//			__HAL_TIM_SET_AUTORELOAD(&htim2, new_period);
+			uint32_t new_period = (uint32_t)((int32_t)NOMINAL_PERIOD + total_correction);
+			htim2.Init.Period = new_period;
+			__HAL_TIM_SET_AUTORELOAD(&htim2, new_period);
 
 			// Beacons counting
 			beacons_received ++;
@@ -353,7 +369,7 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 		else {
 			timer_running_flag ++;
 			first_beacon_time = time_unformatted;
-			timer_periods = 0b1111111111111111;
+			timer_periods = 0; // 0b1111111111111111;
 		}
 
 			// Reseting timer
@@ -376,7 +392,7 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 //				}
 //			}
 
-		timer_periods = 0;
+//		timer_periods = 0;
 //			__enable_irq();
 
 		HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_1);
@@ -385,7 +401,6 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 		prev_received_time = time_unformatted;
 
 		// Time formatting
-//		format_time(time_unformatted, &td);
 //		format_date(time_unformatted, &td);
 //
 		time_unformatted_g = time_unformatted;
@@ -413,11 +428,14 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 		int32_t diff1 = (int32_t)(diff >> 32);
 		int32_t diff2 = (int32_t)(diff);
 
+		format_time(time_unformatted, &td);
+
 		printf("\r\n--- TIME VALID ---\r\n");
 		printf("\r\nTime: %02u:%02u:%02u\r\n", td.hours, td.minutes, td.seconds);
 		printf("Previous timer period: %" PRIu32 "\r\n", ticks_in_period);
-		printf("Timer periods local: %" PRIu16 "\r\n", timer_periods_local);
+//		printf("Timer periods since last beacon counted: %" PRIu16 "\r\n", periods_since_last_beacon);
 		printf("Seconds between beacons: %" PRIu16 "\r\n", secs_between_beacons);
+		printf("Total periods counted: %" PRIu16 "\r\n", periods_measured);
 		printf("Ticks since last reset: %" PRIu32 "\r\n", ticks_since_last_rst);
 
 		// Total ticks

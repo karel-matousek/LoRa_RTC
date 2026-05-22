@@ -62,7 +62,7 @@ UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 volatile uint32_t time_unformatted_g;
-volatile uint16_t timer_periods = 11;
+volatile uint16_t timer_periods = 0;
 volatile int32_t change;
 volatile uint8_t update_display_flag = 0;
 
