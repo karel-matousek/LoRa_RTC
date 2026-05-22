@@ -49,6 +49,8 @@ extern uint16_t timer_periods;
 extern time_date_t td;
 extern int32_t change;
 extern uint8_t update_display_flag;
+extern uint32_t timer16_periods;
+extern TIM_HandleTypeDef htim16;
 /* USER CODE END EV */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -81,7 +83,9 @@ extern uint8_t update_display_flag;
 /* Private variables ---------------------------------------------------------*/
 /* Radio events function pointer */
 static RadioEvents_t RadioEvents;
-
+static uint16_t ticks_since_last_reset_timer16;
+static uint16_t prev_ticks_since_last_reset_timer16;
+static uint32_t prev_tim16_periods = 0;
 /* USER CODE BEGIN PV */
 //static TIM_HandleTypeDef *p_timer;
 uint32_t prev_received_time;
@@ -199,6 +203,9 @@ static void OnTxDone(void)
 static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraSnr_FskCfo)
 {
   /* USER CODE BEGIN OnRxDone */
+	ticks_since_last_reset_timer16 = __HAL_TIM_GET_COUNTER(&htim16);
+	uint32_t tim16_periods_local = timer16_periods;
+
 	static uint8_t timer_running_flag = 0;
 
 #ifdef DEBUG_PRINT
@@ -266,7 +273,9 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 
 	if (crc_bytes[0] == time_crc[0] && crc_bytes[1] == time_crc[1] && beacon_rx_allowed_flag == 1) {
 
-//		HAL_UART_Transmit(&huart1, (uint8_t*)"BEACON_RCVD\r\n", 13, 100);
+		uint64_t ticks_between_beacons = (uint64_t)ticks_since_last_reset_timer16 + 65536 * ((uint64_t)tim16_periods_local - (uint64_t)prev_tim16_periods) - (uint64_t)prev_ticks_since_last_reset_timer16;
+		prev_ticks_since_last_reset_timer16 = ticks_since_last_reset_timer16;
+		prev_tim16_periods = tim16_periods_local;
 
 		uint32_t time_unformatted = 0;
 		time_unformatted |= time_data[3] << 24;
@@ -296,7 +305,7 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 //		static uint16_t last_timer_periods = 0;
 //		uint16_t periods_since_last_beacon = timer_periods_local - last_timer_periods;
 //		last_timer_periods = timer_periods_local;
-
+//
 //		if (__HAL_TIM_GET_FLAG(&htim2, TIM_FLAG_UPDATE)) {
 //
 //			if (ticks_since_last_rst < (htim2.Init.Period / 2)) {
@@ -341,8 +350,8 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 			if (integral_error > MAX_INTEGRAL) integral_error = MAX_INTEGRAL;
 			if (integral_error < -MAX_INTEGRAL) integral_error = -MAX_INTEGRAL;
 
-			p_term = error_per_sec / 32;
-			i_term = integral_error / 512;
+			p_term = error_per_sec / 4;
+			i_term = integral_error / 128;
 //
 //			int64_t raw_hw_ticks = (int64_t)ticks_in_period * (int64_t)periods_since_last_beacon + (int64_t)ticks_since_last_rst;
 //			total_ticks = raw_hw_ticks - (int64_t)prev_ticks_since_last_rst;
