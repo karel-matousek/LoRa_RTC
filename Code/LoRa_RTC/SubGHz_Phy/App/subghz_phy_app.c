@@ -44,9 +44,11 @@
 /* USER CODE BEGIN EV */
 extern uint32_t time_unformatted_g;
 extern TIM_HandleTypeDef htim2;
+extern UART_HandleTypeDef huart1;
 extern uint16_t timer_periods;
 extern time_date_t td;
 extern int32_t change;
+extern uint8_t update_display_flag;
 /* USER CODE END EV */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -63,7 +65,9 @@ extern int32_t change;
 #define BEACON_PREAMBLE		10			// Preamble 10 symbols
 #define PAYLOAD_LENGTH		17			// Payload length 17 symbols
 
-#define NOMINAL_PERIOD 48000000
+#define NOMINAL_PERIOD 	48000000
+#define MAX_INTEGRAL	10000000
+#define MAX_CORRECTION	30000
 
 #define DEBUG_PRINT
 
@@ -196,7 +200,6 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 {
   /* USER CODE BEGIN OnRxDone */
 	static uint8_t timer_running_flag = 0;
-	int32_t error_ms = 0;
 
 #ifdef DEBUG_PRINT
 	static uint16_t beacons_received = 1;
@@ -257,6 +260,8 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 
 	if (crc_bytes[0] == time_crc[0] && crc_bytes[1] == time_crc[1] && timer_periods > 10) {
 
+//		HAL_UART_Transmit(&huart1, (uint8_t*)"BEACON_RCVD\r\n", 13, 100);
+
 		uint32_t time_unformatted = 0;
 		time_unformatted |= time_data[3] << 24;
 		time_unformatted |= time_data[2] << 16;
@@ -281,6 +286,17 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 		__disable_irq();
 		uint32_t ticks_since_last_rst = __HAL_TIM_GET_COUNTER(&htim2);
 		uint16_t timer_periods_local = timer_periods;
+
+//		if (__HAL_TIM_GET_FLAG(&htim2, TIM_FLAG_UPDATE)) {
+//
+//			if (ticks_since_last_rst < (htim2.Init.Period / 2)) {
+//				timer_periods_local++;
+//
+//				__HAL_TIM_CLEAR_FLAG(&htim2, TIM_FLAG_UPDATE);
+//				NVIC_ClearPendingIRQ(TIM2_IRQn);
+//			}
+//		}
+
 		timer_periods = 0;
 		__enable_irq();
 
@@ -291,8 +307,9 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 		static uint32_t ticks_in_period;
 		static int32_t error_per_sec;
 		static int64_t integral_error = 0;
-		int32_t p_term;
-		int32_t i_term;
+		static int32_t p_term = 0;
+		static int32_t i_term = 0;
+		int32_t error_ms = 0;
 
 		// Timer period configuration
 		static uint32_t prev_ticks_since_last_rst = 0;
@@ -301,9 +318,6 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 			ticks_in_period = htim2.Init.Period;
 
 			secs_between_beacons = (uint16_t)(time_unformatted - prev_received_time);
-			if (secs_between_beacons == 0) {
-				secs_between_beacons = 128;
-			}
 
 			int64_t raw_hw_ticks = (int64_t)ticks_in_period * (int64_t)timer_periods_local + (int64_t)ticks_since_last_rst;
 			total_ticks = raw_hw_ticks - (int64_t)prev_ticks_since_last_rst;
@@ -311,114 +325,91 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 
 			correct_ticks = (int64_t)NOMINAL_PERIOD * (int64_t)secs_between_beacons;
 			diff = total_ticks - correct_ticks;
+			int32_t offset_correction = (int32_t)(diff / 4096);
+			error_per_sec = (int32_t)(diff / secs_between_beacons);
+			integral_error += error_per_sec + offset_correction;
 
 			error_ms = (int32_t)(diff / 48000); // error in ms
-//			change = diff / secs_between_beacons;
-			error_per_sec = (int32_t)(diff / secs_between_beacons);
-			integral_error += error_per_sec;
 
-			p_term = error_per_sec / 16;
+			if (integral_error > MAX_INTEGRAL) integral_error = MAX_INTEGRAL;
+			if (integral_error < -MAX_INTEGRAL) integral_error = -MAX_INTEGRAL;
+
+			p_term = error_per_sec / 32;
 			i_term = integral_error / 512;
 
-			uint32_t new_period = (uint32_t)((int32_t)NOMINAL_PERIOD + p_term + i_term);
-			htim2.Init.Period = new_period;
-			__HAL_TIM_SET_AUTORELOAD(&htim2, new_period);
+			int32_t total_correction = p_term + i_term;
+			if (total_correction > MAX_CORRECTION) total_correction = MAX_CORRECTION;
+			if (total_correction < -MAX_CORRECTION) total_correction = -MAX_CORRECTION;
 
-//			if (timer_running_flag == 1) {
-//				timer_running_flag = 2;
-//
-//				// Reseting timer
-//				__HAL_TIM_SET_COUNTER(&htim2, 0);
-//				HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_1);
-//			}
+//			uint32_t new_period = (uint32_t)((int32_t)NOMINAL_PERIOD + total_correction);
+//			htim2.Init.Period = new_period;
+//			__HAL_TIM_SET_AUTORELOAD(&htim2, new_period);
 
 			// Beacons counting
 			beacons_received ++;
 			current_beacon_time = time_unformatted;
 			beacons_passed = (uint16_t)(1 + (current_beacon_time - first_beacon_time) / 128);
 		}
-//		if (timer_running_flag == 2) {
-//			ticks_in_period = htim2.Init.Period;
-//
-//			secs_between_beacons = (uint16_t)(time_unformatted - prev_received_time);
-//			if (secs_between_beacons == 0) {
-//				secs_between_beacons = 128;
-//			}
-//
-//			total_ticks = (int64_t)ticks_in_period * (int64_t)timer_periods_local + (int64_t)ticks_since_last_reset;
-//			correct_ticks = (int64_t)ticks_in_period * (int64_t)secs_between_beacons;
-//			diff = total_ticks - correct_ticks;
-//			error_ms = (int32_t)(diff / 48000); // error in ms
-//
-//			uint32_t new_period = (uint32_t)((int32_t)(htim2.Init.Period) + 2 * (int32_t)(diff / secs_between_beacons));
-//			htim2.Instance->ARR = new_period;
-//			htim2.Init.Period = new_period;
-//		}
-//		else if (timer_running_flag == 1) {
-//			ticks_in_period = htim2.Init.Period;
-//
-//			secs_between_beacons = (uint16_t)(time_unformatted - prev_received_time);
-//			if (secs_between_beacons == 0) {
-//				secs_between_beacons = 128;
-//			}
-//
-//			total_ticks = (int64_t)ticks_in_period * (int64_t)timer_periods_local + (int64_t)ticks_since_last_reset;
-//			correct_ticks = (int64_t)ticks_in_period * (int64_t)secs_between_beacons;
-//			diff = total_ticks - correct_ticks;
-//			error_ms = (int32_t)(diff / 48000); // error in ms
-//
-//			uint32_t new_period = (uint32_t)((int32_t)(htim2.Init.Period) + (int32_t)(diff / secs_between_beacons));
-//			htim2.Instance->ARR = new_period;
-//			htim2.Init.Period = new_period;
-//
-//			timer_running_flag = 2;
-//
-//			// Beacons counting
-//			beacons_received ++;
-//			current_beacon_time = time_unformatted;
-//			beacons_passed = (uint16_t)(1 + (current_beacon_time - first_beacon_time) / 128);
-//
-//			// Reseting timer
-//			__HAL_TIM_SET_COUNTER(&htim2, 0);
-//			HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_1);
-//		}
 		else {
-			timer_running_flag = 1;
+			timer_running_flag ++;
 			first_beacon_time = time_unformatted;
+			timer_periods = 0b1111111111111111;
+		}
 
 			// Reseting timer
-			__HAL_TIM_SET_COUNTER(&htim2, 0);
-			HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_1);
-		}
+//			__HAL_TIM_SET_COUNTER(&htim2, 0);
+//
+//			__HAL_TIM_CLEAR_FLAG(&htim2, TIM_FLAG_UPDATE);
+//			__HAL_TIM_CLEAR_IT(&htim2, TIM_IT_UPDATE);
+//
+//			__disable_irq();
+//			uint32_t ticks_since_last_rst = __HAL_TIM_GET_COUNTER(&htim2);
+//			uint16_t timer_periods_local = timer_periods;
+//
+//			if (__HAL_TIM_GET_FLAG(&htim2, TIM_FLAG_UPDATE)) {
+//
+//				if (ticks_since_last_rst < (htim2.Init.Period / 2)) {
+//					timer_periods_local++;
+//
+//					__HAL_TIM_CLEAR_FLAG(&htim2, TIM_FLAG_UPDATE);
+//					NVIC_ClearPendingIRQ(TIM2_IRQn);
+//				}
+//			}
+
+		timer_periods = 0;
+//			__enable_irq();
+
+		HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_1);
+//		}
 
 		prev_received_time = time_unformatted;
 
 		// Time formatting
-		format_time(time_unformatted, &td);
-		format_date(time_unformatted, &td);
-
+//		format_time(time_unformatted, &td);
+//		format_date(time_unformatted, &td);
+//
 		time_unformatted_g = time_unformatted;
-
-		// OLED
-		char text_buffer[30];
-
-		sprintf(text_buffer, "%02u:%02u:%02u\r\n", td.hours, td.minutes, td.seconds);
-		ssd1306_SetCursor(2, 0);
-		ssd1306_WriteString(text_buffer, Font_11x18, White);
-
-		sprintf(text_buffer, "%s %u %u\r\n", td.month, td.day, td.year);
-		ssd1306_SetCursor(2, 20);
-		ssd1306_WriteString(text_buffer, Font_6x8, White);
-
-		ssd1306_UpdateScreen();
+//
+//		// OLED
+//		char text_buffer[30];
+//
+//		sprintf(text_buffer, "%02u:%02u:%02u\r\n", td.hours, td.minutes, td.seconds);
+//		ssd1306_SetCursor(2, 0);
+//		ssd1306_WriteString(text_buffer, Font_11x18, White);
+//
+//		sprintf(text_buffer, "%s %u %u\r\n", td.month, td.day, td.year);
+//		ssd1306_SetCursor(2, 20);
+//		ssd1306_WriteString(text_buffer, Font_6x8, White);
+//
+//		ssd1306_UpdateScreen();
 
 		/*======================================================== SERIAL PRINTING ========================================================*/
 
 #ifdef DEBUG_PRINT
-		int32_t total_ticks1 = (int32_t)(total_ticks >> 32);
-		int32_t total_ticks2 = (int32_t)(total_ticks);
-		int32_t correct_ticks1 = (int32_t)(correct_ticks >> 32);
-		int32_t correct_ticks2 = (int32_t)(correct_ticks);
+//		int32_t total_ticks1 = (int32_t)(total_ticks >> 32);
+//		int32_t total_ticks2 = (int32_t)(total_ticks);
+//		int32_t correct_ticks1 = (int32_t)(correct_ticks >> 32);
+//		int32_t correct_ticks2 = (int32_t)(correct_ticks);
 		int32_t diff1 = (int32_t)(diff >> 32);
 		int32_t diff2 = (int32_t)(diff);
 
@@ -430,44 +421,44 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 		printf("Ticks since last reset: %" PRIu32 "\r\n", ticks_since_last_rst);
 
 		// Total ticks
-		printf("Ticks total:   %ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld",
-					(total_ticks1 >> 31) & 1, (total_ticks1 >> 30) & 1, (total_ticks1 >> 29) & 1, (total_ticks1 >> 28) & 1,
-					(total_ticks1 >> 27) & 1, (total_ticks1 >> 26) & 1, (total_ticks1 >> 25) & 1, (total_ticks1 >> 24) & 1,
-					(total_ticks1 >> 23) & 1, (total_ticks1 >> 22) & 1, (total_ticks1 >> 21) & 1, (total_ticks1 >> 20) & 1,
-					(total_ticks1 >> 19) & 1, (total_ticks1 >> 18) & 1, (total_ticks1 >> 17) & 1, (total_ticks1 >> 16) & 1,
-					(total_ticks1 >> 15) & 1, (total_ticks1 >> 14) & 1, (total_ticks1 >> 13) & 1, (total_ticks1 >> 12) & 1,
-					(total_ticks1 >> 11) & 1, (total_ticks1 >> 10) & 1, (total_ticks1 >> 9) & 1, (total_ticks1 >> 8) & 1,
-					(total_ticks1 >> 7) & 1, (total_ticks1 >> 6) & 1, (total_ticks1 >> 5) & 1, (total_ticks1 >> 4) & 1,
-					(total_ticks1 >> 3) & 1, (total_ticks1 >> 2) & 1, (total_ticks1 >> 1) & 1, (total_ticks1 >> 0) & 1);
-		printf(" %ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld\r\n",
-					(total_ticks2 >> 31) & 1, (total_ticks2 >> 30) & 1, (total_ticks2 >> 29) & 1, (total_ticks2 >> 28) & 1,
-					(total_ticks2 >> 27) & 1, (total_ticks2 >> 26) & 1, (total_ticks2 >> 25) & 1, (total_ticks2 >> 24) & 1,
-					(total_ticks2 >> 23) & 1, (total_ticks2 >> 22) & 1, (total_ticks2 >> 21) & 1, (total_ticks2 >> 20) & 1,
-					(total_ticks2 >> 19) & 1, (total_ticks2 >> 18) & 1, (total_ticks2 >> 17) & 1, (total_ticks2 >> 16) & 1,
-					(total_ticks2 >> 15) & 1, (total_ticks2 >> 14) & 1, (total_ticks2 >> 13) & 1, (total_ticks2 >> 12) & 1,
-					(total_ticks2 >> 11) & 1, (total_ticks2 >> 10) & 1, (total_ticks2 >> 9) & 1, (total_ticks2 >> 8) & 1,
-					(total_ticks2 >> 7) & 1, (total_ticks2 >> 6) & 1, (total_ticks2 >> 5) & 1, (total_ticks2 >> 4) & 1,
-					(total_ticks2 >> 3) & 1, (total_ticks2 >> 2) & 1, (total_ticks2 >> 1) & 1, (total_ticks2 >> 0) & 1);
-
-		// Correct ticks
-		printf("Correct ticks: %ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld",
-					(correct_ticks1 >> 31) & 1, (correct_ticks1 >> 30) & 1, (correct_ticks1 >> 29) & 1, (correct_ticks1 >> 28) & 1,
-					(correct_ticks1 >> 27) & 1, (correct_ticks1 >> 26) & 1, (correct_ticks1 >> 25) & 1, (correct_ticks1 >> 24) & 1,
-					(correct_ticks1 >> 23) & 1, (correct_ticks1 >> 22) & 1, (correct_ticks1 >> 21) & 1, (correct_ticks1 >> 20) & 1,
-					(correct_ticks1 >> 19) & 1, (correct_ticks1 >> 18) & 1, (correct_ticks1 >> 17) & 1, (correct_ticks1 >> 16) & 1,
-					(correct_ticks1 >> 15) & 1, (correct_ticks1 >> 14) & 1, (correct_ticks1 >> 13) & 1, (correct_ticks1 >> 12) & 1,
-					(correct_ticks1 >> 11) & 1, (correct_ticks1 >> 10) & 1, (correct_ticks1 >> 9) & 1, (correct_ticks1 >> 8) & 1,
-					(correct_ticks1 >> 7) & 1, (correct_ticks1 >> 6) & 1, (correct_ticks1 >> 5) & 1, (correct_ticks1 >> 4) & 1,
-					(correct_ticks1 >> 3) & 1, (correct_ticks1 >> 2) & 1, (correct_ticks1 >> 1) & 1, (correct_ticks1 >> 0) & 1);
-		printf(" %ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld\r\n",
-					(correct_ticks2 >> 31) & 1, (correct_ticks2 >> 30) & 1, (correct_ticks2 >> 29) & 1, (correct_ticks2 >> 28) & 1,
-					(correct_ticks2 >> 27) & 1, (correct_ticks2 >> 26) & 1, (correct_ticks2 >> 25) & 1, (correct_ticks2 >> 24) & 1,
-					(correct_ticks2 >> 23) & 1, (correct_ticks2 >> 22) & 1, (correct_ticks2 >> 21) & 1, (correct_ticks2 >> 20) & 1,
-					(correct_ticks2 >> 19) & 1, (correct_ticks2 >> 18) & 1, (correct_ticks2 >> 17) & 1, (correct_ticks2 >> 16) & 1,
-					(correct_ticks2 >> 15) & 1, (correct_ticks2 >> 14) & 1, (correct_ticks2 >> 13) & 1, (correct_ticks2 >> 12) & 1,
-					(correct_ticks2 >> 11) & 1, (correct_ticks2 >> 10) & 1, (correct_ticks2 >> 9) & 1, (correct_ticks2 >> 8) & 1,
-					(correct_ticks2 >> 7) & 1, (correct_ticks2 >> 6) & 1, (correct_ticks2 >> 5) & 1, (correct_ticks2 >> 4) & 1,
-					(correct_ticks2 >> 3) & 1, (correct_ticks2 >> 2) & 1, (correct_ticks2 >> 1) & 1, (correct_ticks2 >> 0) & 1);
+//		printf("Ticks total:   %ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld",
+//					(total_ticks1 >> 31) & 1, (total_ticks1 >> 30) & 1, (total_ticks1 >> 29) & 1, (total_ticks1 >> 28) & 1,
+//					(total_ticks1 >> 27) & 1, (total_ticks1 >> 26) & 1, (total_ticks1 >> 25) & 1, (total_ticks1 >> 24) & 1,
+//					(total_ticks1 >> 23) & 1, (total_ticks1 >> 22) & 1, (total_ticks1 >> 21) & 1, (total_ticks1 >> 20) & 1,
+//					(total_ticks1 >> 19) & 1, (total_ticks1 >> 18) & 1, (total_ticks1 >> 17) & 1, (total_ticks1 >> 16) & 1,
+//					(total_ticks1 >> 15) & 1, (total_ticks1 >> 14) & 1, (total_ticks1 >> 13) & 1, (total_ticks1 >> 12) & 1,
+//					(total_ticks1 >> 11) & 1, (total_ticks1 >> 10) & 1, (total_ticks1 >> 9) & 1, (total_ticks1 >> 8) & 1,
+//					(total_ticks1 >> 7) & 1, (total_ticks1 >> 6) & 1, (total_ticks1 >> 5) & 1, (total_ticks1 >> 4) & 1,
+//					(total_ticks1 >> 3) & 1, (total_ticks1 >> 2) & 1, (total_ticks1 >> 1) & 1, (total_ticks1 >> 0) & 1);
+//		printf(" %ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld\r\n",
+//					(total_ticks2 >> 31) & 1, (total_ticks2 >> 30) & 1, (total_ticks2 >> 29) & 1, (total_ticks2 >> 28) & 1,
+//					(total_ticks2 >> 27) & 1, (total_ticks2 >> 26) & 1, (total_ticks2 >> 25) & 1, (total_ticks2 >> 24) & 1,
+//					(total_ticks2 >> 23) & 1, (total_ticks2 >> 22) & 1, (total_ticks2 >> 21) & 1, (total_ticks2 >> 20) & 1,
+//					(total_ticks2 >> 19) & 1, (total_ticks2 >> 18) & 1, (total_ticks2 >> 17) & 1, (total_ticks2 >> 16) & 1,
+//					(total_ticks2 >> 15) & 1, (total_ticks2 >> 14) & 1, (total_ticks2 >> 13) & 1, (total_ticks2 >> 12) & 1,
+//					(total_ticks2 >> 11) & 1, (total_ticks2 >> 10) & 1, (total_ticks2 >> 9) & 1, (total_ticks2 >> 8) & 1,
+//					(total_ticks2 >> 7) & 1, (total_ticks2 >> 6) & 1, (total_ticks2 >> 5) & 1, (total_ticks2 >> 4) & 1,
+//					(total_ticks2 >> 3) & 1, (total_ticks2 >> 2) & 1, (total_ticks2 >> 1) & 1, (total_ticks2 >> 0) & 1);
+//
+//		// Correct ticks
+//		printf("Correct ticks: %ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld",
+//					(correct_ticks1 >> 31) & 1, (correct_ticks1 >> 30) & 1, (correct_ticks1 >> 29) & 1, (correct_ticks1 >> 28) & 1,
+//					(correct_ticks1 >> 27) & 1, (correct_ticks1 >> 26) & 1, (correct_ticks1 >> 25) & 1, (correct_ticks1 >> 24) & 1,
+//					(correct_ticks1 >> 23) & 1, (correct_ticks1 >> 22) & 1, (correct_ticks1 >> 21) & 1, (correct_ticks1 >> 20) & 1,
+//					(correct_ticks1 >> 19) & 1, (correct_ticks1 >> 18) & 1, (correct_ticks1 >> 17) & 1, (correct_ticks1 >> 16) & 1,
+//					(correct_ticks1 >> 15) & 1, (correct_ticks1 >> 14) & 1, (correct_ticks1 >> 13) & 1, (correct_ticks1 >> 12) & 1,
+//					(correct_ticks1 >> 11) & 1, (correct_ticks1 >> 10) & 1, (correct_ticks1 >> 9) & 1, (correct_ticks1 >> 8) & 1,
+//					(correct_ticks1 >> 7) & 1, (correct_ticks1 >> 6) & 1, (correct_ticks1 >> 5) & 1, (correct_ticks1 >> 4) & 1,
+//					(correct_ticks1 >> 3) & 1, (correct_ticks1 >> 2) & 1, (correct_ticks1 >> 1) & 1, (correct_ticks1 >> 0) & 1);
+//		printf(" %ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld\r\n",
+//					(correct_ticks2 >> 31) & 1, (correct_ticks2 >> 30) & 1, (correct_ticks2 >> 29) & 1, (correct_ticks2 >> 28) & 1,
+//					(correct_ticks2 >> 27) & 1, (correct_ticks2 >> 26) & 1, (correct_ticks2 >> 25) & 1, (correct_ticks2 >> 24) & 1,
+//					(correct_ticks2 >> 23) & 1, (correct_ticks2 >> 22) & 1, (correct_ticks2 >> 21) & 1, (correct_ticks2 >> 20) & 1,
+//					(correct_ticks2 >> 19) & 1, (correct_ticks2 >> 18) & 1, (correct_ticks2 >> 17) & 1, (correct_ticks2 >> 16) & 1,
+//					(correct_ticks2 >> 15) & 1, (correct_ticks2 >> 14) & 1, (correct_ticks2 >> 13) & 1, (correct_ticks2 >> 12) & 1,
+//					(correct_ticks2 >> 11) & 1, (correct_ticks2 >> 10) & 1, (correct_ticks2 >> 9) & 1, (correct_ticks2 >> 8) & 1,
+//					(correct_ticks2 >> 7) & 1, (correct_ticks2 >> 6) & 1, (correct_ticks2 >> 5) & 1, (correct_ticks2 >> 4) & 1,
+//					(correct_ticks2 >> 3) & 1, (correct_ticks2 >> 2) & 1, (correct_ticks2 >> 1) & 1, (correct_ticks2 >> 0) & 1);
 
 		// Difference
 		printf("Difference:    %ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld",
@@ -489,21 +480,19 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 					(diff2 >> 7) & 1, (diff2 >> 6) & 1, (diff2 >> 5) & 1, (diff2 >> 4) & 1,
 					(diff2 >> 3) & 1, (diff2 >> 2) & 1, (diff2 >> 1) & 1, (diff2 >> 0) & 1);
 		printf("Error: %" PRId32 "ms\r\n", error_ms);
-		printf("Error bin: %ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld\r\n",
-			(error_ms >> 31) & 1, (error_ms >> 30) & 1, (error_ms >> 29) & 1, (error_ms >> 28) & 1,
-			(error_ms >> 27) & 1, (error_ms >> 26) & 1, (error_ms >> 25) & 1, (error_ms >> 24) & 1,
-			(error_ms >> 23) & 1, (error_ms >> 22) & 1, (error_ms >> 21) & 1, (error_ms >> 20) & 1,
-			(error_ms >> 19) & 1, (error_ms >> 18) & 1, (error_ms >> 17) & 1, (error_ms >> 16) & 1,
-			(error_ms >> 15) & 1, (error_ms >> 14) & 1, (error_ms >> 13) & 1, (error_ms >> 12) & 1,
-			(error_ms >> 11) & 1, (error_ms >> 10) & 1, (error_ms >> 9) & 1, (error_ms >> 8) & 1,
-			(error_ms >> 7) & 1, (error_ms >> 6) & 1, (error_ms >> 5) & 1, (error_ms >> 4) & 1,
-			(error_ms >> 3) & 1, (error_ms >> 2) & 1, (error_ms >> 1) & 1, (error_ms >> 0) & 1);
+//		printf("Error bin: %ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld\r\n",
+//			(error_ms >> 31) & 1, (error_ms >> 30) & 1, (error_ms >> 29) & 1, (error_ms >> 28) & 1,
+//			(error_ms >> 27) & 1, (error_ms >> 26) & 1, (error_ms >> 25) & 1, (error_ms >> 24) & 1,
+//			(error_ms >> 23) & 1, (error_ms >> 22) & 1, (error_ms >> 21) & 1, (error_ms >> 20) & 1,
+//			(error_ms >> 19) & 1, (error_ms >> 18) & 1, (error_ms >> 17) & 1, (error_ms >> 16) & 1,
+//			(error_ms >> 15) & 1, (error_ms >> 14) & 1, (error_ms >> 13) & 1, (error_ms >> 12) & 1,
+//			(error_ms >> 11) & 1, (error_ms >> 10) & 1, (error_ms >> 9) & 1, (error_ms >> 8) & 1,
+//			(error_ms >> 7) & 1, (error_ms >> 6) & 1, (error_ms >> 5) & 1, (error_ms >> 4) & 1,
+//			(error_ms >> 3) & 1, (error_ms >> 2) & 1, (error_ms >> 1) & 1, (error_ms >> 0) & 1);
 
 		printf("New timer period: %" PRIu32 "\r\n", htim2.Init.Period);
 		printf("P term: %" PRId32 "\r\n", p_term);
 		printf("I term: %" PRId32 "\r\n", i_term);
-		printf("Last time: %02u:%02u:%02u\r\n", td.hours, td.minutes, td.seconds);
-		printf("Seconds between beacons: %u\r\n", secs_between_beacons);
 		printf("Number of received beacons: %u\r\n", beacons_received);
 		printf("Number of passed beacons: %u\r\n", beacons_passed);
 #endif

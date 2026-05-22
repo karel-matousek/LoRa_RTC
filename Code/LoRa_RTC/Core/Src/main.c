@@ -64,6 +64,7 @@ UART_HandleTypeDef huart1;
 volatile uint32_t time_unformatted_g;
 volatile uint16_t timer_periods = 11;
 volatile int32_t change;
+volatile uint8_t update_display_flag = 0;
 
 time_date_t td;
 /* USER CODE END PV */
@@ -155,7 +156,25 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	while (1) {
+		if (update_display_flag) {
+			update_display_flag = 0;
 
+			format_time(time_unformatted_g, &td);
+			format_date(time_unformatted_g, &td);
+
+			// OLED
+			char text_buffer[30];
+
+			sprintf(text_buffer, "%02u:%02u:%02u\r\n", td.hours, td.minutes, td.seconds);
+			ssd1306_SetCursor(2, 0);
+			ssd1306_WriteString(text_buffer, Font_11x18, White);
+
+			sprintf(text_buffer, "%s %u %u\r\n", td.month, td.day, td.year);
+			ssd1306_SetCursor(2, 20);
+			ssd1306_WriteString(text_buffer, Font_6x8, White);
+
+			ssd1306_UpdateScreen();
+		}
     /* USER CODE END WHILE */
     MX_SubGHz_Phy_Process();
 
@@ -531,34 +550,24 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	{
 		time_unformatted_g ++;
 
-//		uint8_t hours;
-//		uint8_t mins;
-//		uint8_t secs;
-
-		format_time(time_unformatted_g, &td);
+//		format_time(time_unformatted_g, &td);
 
 		timer_periods ++;
-/*
-		if (timer_periods == 129) {
-			uint32_t new_period = (uint32_t)((int32_t)(htim2.Init.Period) - change);
-			htim2.Instance->ARR = new_period;
-			htim2.Init.Period = new_period;
 
-#ifdef DEBUG_PRINT
-			printf("\r\nNew period: %" PRIu32 "\r\n", new_period);
-#endif
-		}
-*/
+		update_display_flag = 1;
+
+//		printf("Timer periods: %" PRIu16 "\r\n", timer_periods);
+
 		// OLED
-		char text_buffer[20];
+//		char text_buffer[20];
 
 		// printf("%02u:%02u:%02u\r\n", td.hours, td.minutes, td.seconds);
 
-		sprintf(text_buffer, "%02u:%02u:%02u\r\n", td.hours, td.minutes, td.seconds);
-		ssd1306_SetCursor(2, 0);
-		ssd1306_WriteString(text_buffer, Font_11x18, White);
-
-		ssd1306_UpdateScreen();
+//		sprintf(text_buffer, "%02u:%02u:%02u\r\n", td.hours, td.minutes, td.seconds);
+//		ssd1306_SetCursor(2, 0);
+//		ssd1306_WriteString(text_buffer, Font_11x18, White);
+//
+//		ssd1306_UpdateScreen();
 	}
 }
 
