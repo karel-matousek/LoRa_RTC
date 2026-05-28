@@ -4,6 +4,11 @@
 	(generator_version "9.0")
 	(uuid "866c6744-6e32-439e-8713-c6a6cd9ffc29")
 	(paper "A3")
+	(title_block
+		(title "LoRaWAN Class-B beacons receiver")
+		(date "2026-02-26")
+		(rev "A")
+	)
 	(lib_symbols
 		(symbol "74xGxx:74LVC1G17"
 			(exclude_from_sim no)
@@ -5668,28 +5673,6 @@
 			(justify left bottom)
 		)
 		(uuid "f69211d9-588b-46ee-9b04-c055e47f8aab")
-	)
-	(text_box "Poznamky\n"
-		(exclude_from_sim no)
-		(at 358.14 15.24 0)
-		(size 45.72 20.32)
-		(margins 0.9525 0.9525 0.9525 0.9525)
-		(stroke
-			(width 0)
-			(type solid)
-		)
-		(fill
-			(type none)
-		)
-		(effects
-			(font
-				(size 1.27 1.27)
-				(thickness 0.254)
-				(bold yes)
-			)
-			(justify left top)
-		)
-		(uuid "b4026a28-6e61-4ecd-b06f-2e4d3267652c")
 	)
 	(junction
 		(at 66.04 71.12)

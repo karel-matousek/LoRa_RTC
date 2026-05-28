@@ -553,7 +553,7 @@
       "plot": "",
       "pos_files": "",
       "specctra_dsn": "",
-      "step": "",
+      "step": "LoRa_beacons_receiver.step",
       "svg": "",
       "vrml": ""
     },

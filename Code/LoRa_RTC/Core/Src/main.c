@@ -41,6 +41,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define INIT_PERIOD 	48000000
+
 #define DEBUG_PRINT
 /* USER CODE END PD */
 
@@ -62,12 +64,16 @@ TIM_HandleTypeDef htim16;
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
-volatile uint32_t time_unformatted_g;
-volatile uint16_t timer_periods = 0;
+volatile uint32_t time_unform;
+volatile uint16_t tmr_pers = 0;
 volatile uint32_t timer16_periods = 0;
 volatile int32_t change;
 volatile uint8_t update_display_flag = 0;
-
+volatile uint32_t sec_start = 0;
+volatile uint8_t pulse_state = 0;
+volatile uint32_t tim_per = INIT_PERIOD;
+volatile uint32_t nom_per = INIT_PERIOD;
+volatile uint16_t tim_overflow = 0;
 time_date_t td;
 /* USER CODE END PV */
 
@@ -152,6 +158,9 @@ int main(void)
 
 	ssd1306_UpdateScreen();
 
+//	HAL_TIM_OC_Start_IT(&htim2, TIM_CHANNEL_1);
+	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, INIT_PERIOD);
+
 //	__HAL_TIM_SET_COUNTER(&htim2, 0);
 //	HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_1);
 
@@ -163,8 +172,8 @@ int main(void)
 		if (update_display_flag) {
 			update_display_flag = 0;
 
-			format_time(time_unformatted_g, &td);
-			format_date(time_unformatted_g, &td);
+			format_time(time_unform, &td);
+			format_date(time_unform, &td);
 
 			// OLED
 			char text_buffer[30];
@@ -416,7 +425,7 @@ static void MX_TIM2_Init(void)
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 0;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 47999999;
+  htim2.Init.Period = 0xffffffff;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
@@ -428,7 +437,7 @@ static void MX_TIM2_Init(void)
   {
     Error_Handler();
   }
-  if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
+  if (HAL_TIM_OC_Init(&htim2) != HAL_OK)
   {
     Error_Handler();
   }
@@ -438,11 +447,11 @@ static void MX_TIM2_Init(void)
   {
     Error_Handler();
   }
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 4800000;
+  sConfigOC.OCMode = TIM_OCMODE_TOGGLE;
+  sConfigOC.Pulse = 0;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  if (HAL_TIM_OC_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -581,41 +590,26 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 // TIM2 Callback
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-	if (htim->Instance == TIM2) {	// Check that the interrupt is from TIM2
-		time_unformatted_g ++;
-
-//		format_time(time_unformatted_g, &td);
-
-		timer_periods ++;
-
-		update_display_flag = 1;
-
-//		printf("Timer periods: %" PRIu16 "\r\n", timer_periods);
-
-		// OLED
-//		char text_buffer[20];
-
-		// printf("%02u:%02u:%02u\r\n", td.hours, td.minutes, td.seconds);
-
-//		sprintf(text_buffer, "%02u:%02u:%02u\r\n", td.hours, td.minutes, td.seconds);
-//		ssd1306_SetCursor(2, 0);
-//		ssd1306_WriteString(text_buffer, Font_11x18, White);
-//
-//		ssd1306_UpdateScreen();
-	}
-
-	else if(htim->Instance == TIM16) {
-		timer16_periods ++;
+void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
+	if (htim->Instance == TIM2) {
+		static uint32_t prev_sec_start = 0;
+		uint32_t curr_ccr = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
+		if (pulse_state == 0) {
+			pulse_state = 1;
+//			tmr_pers ++;
+			sec_start = curr_ccr;
+			if (sec_start < prev_sec_start) tim_overflow ++;
+			prev_sec_start = sec_start
+			__HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, curr_ccr + (uint32_t)(tim_per) / 10);
+			update_display_flag = 1;
+			time_unform ++;
+		}
+		else if (pulse_state == 1) {
+			pulse_state = 0;
+			__HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, sec_start + tim_per);
+		}
 	}
 }
-
-//void format_time(uint32_t time_unform, uint8_t *hours, uint8_t *minutes, uint8_t *seconds) {
-//	uint32_t seconds_today = time_unform % 86400;
-//	*hours = seconds_today / 3600;
-//	*minutes = (seconds_today % 3600) / 60;
-//	*seconds = (seconds_today % 3600) % 60;
-//}
 
 /* USER CODE END 4 */
 
