@@ -203,15 +203,10 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
   /* USER CODE BEGIN OnRxDone */
 
 	uint32_t timestamp = __HAL_TIM_GET_COUNTER(&htim2);
+	uint32_t ticks_slr = timestamp - sec_start;	// Ticks since last timer reset
+	uint32_t time_unform_local = time_unform;
 
 	static uint8_t phase_flag = 0;
-
-#ifdef DEBUG_PRINT
-//	static uint16_t beacons_received = 1;
-//	static uint16_t beacons_passed = 1;
-//	static uint32_t first_bcn_time = 0;
-//	static uint32_t current_beacon_time = 0;
-#endif
 
 	/*======================================================== DATA EXTRACTION AND CRC CALCULATION ========================================================*/
 
@@ -284,14 +279,14 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 		static uint16_t secs_btw_bcns = 0;
 		static uint32_t prev_bcn_time = 0;
 
-		static uint32_t ticks_slr = 0;	// Ticks since last timer reset
 		static int32_t offset = 0;
-		static int64_t integral_err = 0;
-		static int32_t p_term = 0;
-		static int32_t i_term = 0;
+//		static int32_t prev_offset = 0;
+//		static int64_t integral_err = 0;
+//		static int32_t p_term = 0;
+//		static int32_t i_term = 0;
 
-		static int64_t offset_sum = 0;
-		static int32_t offset_avg = 0;
+//		static int64_t offset_sum = 0;
+//		static int32_t offset_avg = 0;
 
 		static uint64_t per_sum = 0;
 		static uint32_t per_avg = 0;
@@ -300,98 +295,103 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 //		static uint16_t secs_cnt = 0;
 
 		// Timer period configuration
-		if (phase_flag > 2) {
-
-			// Counter of seconds between beacons
-			secs_btw_bcns = (uint16_t)(bcn_time_unform - prev_bcn_time);
-			if (secs_btw_bcns == 0) secs_btw_bcns = 128;
-
-			// Offset calculation
-			offset = (int32_t)(timestamp - sec_start) + (int32_t)tim_per * (int32_t)(time_unform - bcn_time_unform);
-			int32_t offset_correction = offset / 128;
-
-			// PI values calculation
-			integral_err += offset_correction;
-			p_term = offset_correction / 64;
-			i_term = integral_err / 512;
-
-			// PPS correction
-			tim_per = (uint32_t)((int32_t)nom_per + p_term + i_term);
-			if (pulse_state == 0) __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, sec_start + tim_per);
-
-			// Average period calculation
-			secs_btw_bcns = (uint16_t)(bcn_time_unform - prev_bcn_time);
-			uint64_t ticks_btw_bcns = (uint64_t)(timestamp - prev_timestamp) + 0xFFFFFFFF;
+//		if (phase_flag > 2) {
+//
+//			// Counter of seconds between beacons
+//			secs_btw_bcns = (uint16_t)(bcn_time_unform - prev_bcn_time);
+//			if (secs_btw_bcns == 0) secs_btw_bcns = 128;
+//
+//			// Offset calculation
+//			offset = (int32_t)(timestamp - sec_start) + (int32_t)tim_per * (int32_t)(time_unform - bcn_time_unform);
+//			int32_t offset_correction = offset / 128;
+//
+//			// PI values calculation
+//			integral_err += offset_correction;
+//			p_term = offset_correction / 64;
+//			i_term = integral_err / 512;
+//
+//			// PPS correction
+//			tim_per = (uint32_t)((int32_t)nom_per + p_term + i_term);
+//			if (pulse_state == 0) __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, sec_start + tim_per);
+//
+//			// Average period calculation
+//			secs_btw_bcns = (uint16_t)(bcn_time_unform - prev_bcn_time);
+//			uint64_t ticks_btw_bcns = (uint64_t)(timestamp - prev_timestamp) + 0xFFFFFFFF;
 //			tim_overflow = 0;
-
-			per_sum += (uint64_t)(ticks_btw_bcns / secs_btw_bcns);
-			per_avg = (uint64_t)(per_sum / (bcn_cnt - 1));
-
-			// Beacons counting
+//
+//			per_sum += (uint64_t)(ticks_btw_bcns / secs_btw_bcns);
+//			per_avg = (uint64_t)(per_sum / (bcn_cnt - 1));
+//
+//			// Beacons counting
 //			beacons_received ++;
 //			current_beacon_time = time_unformatted;
 //			beacons_passed = (uint16_t)(1 + (current_beacon_time - first_bcn_time) / 128);
-		}
+//		}
 
 		// Phase 3
-		else if (phase_flag == 2) {
+		if (phase_flag > 1) {
 			secs_btw_bcns = (uint16_t)(bcn_time_unform - prev_bcn_time);
-			uint64_t ticks_btw_bcns = (uint64_t)(timestamp - prev_timestamp) + 0xFFFFFFFF;
+			int64_t diff_timestamp = (int64_t)((int32_t)timestamp - (int32_t)prev_timestamp);
+			uint64_t expected_ticks = (uint64_t)secs_btw_bcns * (uint64_t)tim_per;
+			int32_t correction = (int32_t)(diff_timestamp - (int64_t)expected_ticks);
+			uint64_t ticks_btw_bcns = expected_ticks + correction;
 
-//			tim_overflow = 0;
-
-			nom_per = (uint32_t)(ticks_btw_bcns / secs_btw_bcns);
-//			per_sum += nom_per;
+			// Period calculation
+			nom_per = (uint32_t)((ticks_btw_bcns + (uint64_t)(secs_btw_bcns / 2)) / (uint64_t)secs_btw_bcns);
+			if (nom_per > 48400000) nom_per -= per_avg / 128;
+			if (nom_per < 47850000) nom_per += per_avg / 128;
 
 			// Offset calculation
-			ticks_slr = timestamp - sec_start;
-			offset = (int32_t)ticks_slr + (int32_t)tim_per * (int32_t)(time_unform - bcn_time_unform);
+			offset = (int32_t)((int64_t)ticks_slr + (int64_t)tim_per * (int64_t)(time_unform_local - bcn_time_unform));
+//			if (phase_flag > 2 && ((offset - prev_offset) > 20000000 || (offset - prev_offset) < 20000000)) {
+//				if (offset > prev_offset) offset -= per_avg;
+//				if (offset < prev_offset) offset += per_avg;
+//			}
+//			prev_offset = offset;
 
 			// Average period calculation
 			per_sum += (uint64_t)nom_per;
 			per_avg = (uint32_t)(per_sum / (uint64_t)bcn_cnt);
 
-			// Average offset calculation
-			offset_sum += (int64_t)offset;
-			offset_avg = (int32_t)(offset_sum / (int64_t)bcn_cnt);
+//			// Average offset calculation
+//			offset_sum += (int64_t)offset;
+//			offset_avg = (int32_t)(offset_sum / ((int64_t)bcn_cnt - 1));
 
-			// Timer reset
+			// Offset correction
+			if (phase_flag > 15) {
+				int32_t offset_corr = offset / 1024;
+				per_avg += offset_corr;
+			}
+
+			// Timer period configuration
 			tim_per = per_avg;
-//			__HAL_TIM_SET_COUNTER(&htim2, 0);
-//			sec_start = 0;
-//			timestamp = 0;
-//			pulse_state = 0;
-//			__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, sec_start + tim_per);
-//			__HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
-
-//			time_unform = bcn_time_unform;
 			update_display_flag = 1;
 
-//			phase_flag ++;
+			phase_flag ++;
 		}
 
 		// Phase 2
 		else if (phase_flag == 1) {
 			secs_btw_bcns = (uint16_t)(bcn_time_unform - prev_bcn_time);
-			uint64_t ticks_btw_bcns = (uint64_t)(timestamp - prev_timestamp) + 0xFFFFFFFF;
+			int64_t diff_timestamp = (int64_t)((int32_t)timestamp - (int32_t)prev_timestamp);
+			uint64_t expected_ticks = (uint64_t)secs_btw_bcns * (uint64_t)tim_per;
+			int32_t correction = (int32_t)(diff_timestamp - (int64_t)expected_ticks);
+			uint64_t ticks_btw_bcns = expected_ticks + correction;
 
-			nom_per = (uint32_t)(ticks_btw_bcns / secs_btw_bcns);
-//			per_sum += nom_per;
+			nom_per = (uint32_t)((ticks_btw_bcns + (secs_btw_bcns / 2)) / secs_btw_bcns);
+			if (nom_per > 48400000 || nom_per < 47850000) nom_per = 48154224;
 
 			// Average period calculation
-			secs_btw_bcns = (uint16_t)(bcn_time_unform - prev_bcn_time);
-
-
 			per_sum += (uint64_t)nom_per;
 			per_avg = (uint32_t)(per_sum / (uint64_t)bcn_cnt);
 
+			// Timer reset
 			tim_per = per_avg;
 			__HAL_TIM_SET_COUNTER(&htim2, 0);
 			sec_start = 0;
 			timestamp = 0;
 			pulse_state = 0;
 			__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, sec_start + tim_per);
-//			__HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
 
 			time_unform = bcn_time_unform;
 			update_display_flag = 1;
@@ -402,7 +402,6 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 		// Phase 1
 		else {
 			HAL_TIM_OC_Start_IT(&htim2, TIM_CHANNEL_1);
-//			__HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
 
 			time_unform = bcn_time_unform;
 			update_display_flag = 1;
@@ -418,98 +417,24 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 	/*======================================================== SERIAL PRINTING ========================================================*/
 
 #ifdef DEBUG_PRINT
-//		int32_t total_ticks1 = (int32_t)(total_ticks >> 32);
-//		int32_t total_ticks2 = (int32_t)(total_ticks);
-//		int32_t correct_ticks1 = (int32_t)(correct_ticks >> 32);
-//		int32_t correct_ticks2 = (int32_t)(correct_ticks);
-//		int32_t diff1 = (int32_t)(diff >> 32);
-//		int32_t diff2 = (int32_t)(diff);
-
 		format_time(bcn_time_unform, &td);
 
-		printf("\r\nReceived time: %02u:%02u:%02u\r\n", td.hours, td.minutes, td.seconds);
-		printf("Timer overflow value: %" PRIu16 "\r\n", tim_overflow);
-		printf("Received time unformatted: %" PRIu32 "\r\n", bcn_time_unform);
-		printf("Assumed time unformatted: %" PRIu32 "\r\n", time_unform);
-		printf("Seconds between beacons: %" PRIu16 "\r\n", secs_btw_bcns);
-		printf("Nominal period calculated: %" PRIu32 "\r\n", nom_per);
-		printf("Average period: %" PRIu32 "\r\n", per_avg);
-		printf("Number of beacons received: %" PRIu16 "\r\n", bcn_cnt);
-		printf("Ticks since start of the last second: %" PRIu32 "\r\n", ticks_slr);
-		printf("Offset: %" PRId32 "\r\n", offset);
-		printf("New timer period: %" PRIu32 "\r\n", tim_per);
-		printf("P term: %" PRId32 "\r\n", p_term);
-		printf("I term: %" PRId32 "\r\n", i_term);
+//		printf("\r\n");
+//		printf("Received time: %02u:%02u:%02u: ", td.hours, td.minutes, td.seconds);
+//		printf("Received time unformatted: %" PRIu32 ": ", bcn_time_unform);
+//		printf("Assumed time unformatted: %" PRIu32 ": ", time_unform);
+//		printf("Seconds between beacons: %" PRIu16 ": ", secs_btw_bcns);
+		printf("Nominal period calculated: %" PRIu32 ": ", nom_per);
+		printf("Average period: %" PRIu32 ": ", per_avg);
+//		printf("Number of beacons received: %" PRIu16 ": ", bcn_cnt);
+//		printf("Ticks since start of the last second: %" PRIu32 ": ", ticks_slr);
+		printf("Offset: %" PRId32 ": ", offset);
+//		printf("Average offset: %" PRId32 "\r\n", offset_avg);
+//		printf("Timer overflow: %" PRIu16 "\r\n", tim_overflow);
+//		printf("New timer period: %" PRIu32 ": ", tim_per);
+//		printf("P term: %" PRId32 ": ", p_term);
+//		printf("I term: %" PRId32 "\r\n", i_term);
 
-		// Total ticks
-//		printf("Ticks total:   %ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld",
-//					(total_ticks1 >> 31) & 1, (total_ticks1 >> 30) & 1, (total_ticks1 >> 29) & 1, (total_ticks1 >> 28) & 1,
-//					(total_ticks1 >> 27) & 1, (total_ticks1 >> 26) & 1, (total_ticks1 >> 25) & 1, (total_ticks1 >> 24) & 1,
-//					(total_ticks1 >> 23) & 1, (total_ticks1 >> 22) & 1, (total_ticks1 >> 21) & 1, (total_ticks1 >> 20) & 1,
-//					(total_ticks1 >> 19) & 1, (total_ticks1 >> 18) & 1, (total_ticks1 >> 17) & 1, (total_ticks1 >> 16) & 1,
-//					(total_ticks1 >> 15) & 1, (total_ticks1 >> 14) & 1, (total_ticks1 >> 13) & 1, (total_ticks1 >> 12) & 1,
-//					(total_ticks1 >> 11) & 1, (total_ticks1 >> 10) & 1, (total_ticks1 >> 9) & 1, (total_ticks1 >> 8) & 1,
-//					(total_ticks1 >> 7) & 1, (total_ticks1 >> 6) & 1, (total_ticks1 >> 5) & 1, (total_ticks1 >> 4) & 1,
-//					(total_ticks1 >> 3) & 1, (total_ticks1 >> 2) & 1, (total_ticks1 >> 1) & 1, (total_ticks1 >> 0) & 1);
-//		printf(" %ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld\r\n",
-//					(total_ticks2 >> 31) & 1, (total_ticks2 >> 30) & 1, (total_ticks2 >> 29) & 1, (total_ticks2 >> 28) & 1,
-//					(total_ticks2 >> 27) & 1, (total_ticks2 >> 26) & 1, (total_ticks2 >> 25) & 1, (total_ticks2 >> 24) & 1,
-//					(total_ticks2 >> 23) & 1, (total_ticks2 >> 22) & 1, (total_ticks2 >> 21) & 1, (total_ticks2 >> 20) & 1,
-//					(total_ticks2 >> 19) & 1, (total_ticks2 >> 18) & 1, (total_ticks2 >> 17) & 1, (total_ticks2 >> 16) & 1,
-//					(total_ticks2 >> 15) & 1, (total_ticks2 >> 14) & 1, (total_ticks2 >> 13) & 1, (total_ticks2 >> 12) & 1,
-//					(total_ticks2 >> 11) & 1, (total_ticks2 >> 10) & 1, (total_ticks2 >> 9) & 1, (total_ticks2 >> 8) & 1,
-//					(total_ticks2 >> 7) & 1, (total_ticks2 >> 6) & 1, (total_ticks2 >> 5) & 1, (total_ticks2 >> 4) & 1,
-//					(total_ticks2 >> 3) & 1, (total_ticks2 >> 2) & 1, (total_ticks2 >> 1) & 1, (total_ticks2 >> 0) & 1);
-//
-//		// Correct ticks
-//		printf("Correct ticks: %ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld",
-//					(correct_ticks1 >> 31) & 1, (correct_ticks1 >> 30) & 1, (correct_ticks1 >> 29) & 1, (correct_ticks1 >> 28) & 1,
-//					(correct_ticks1 >> 27) & 1, (correct_ticks1 >> 26) & 1, (correct_ticks1 >> 25) & 1, (correct_ticks1 >> 24) & 1,
-//					(correct_ticks1 >> 23) & 1, (correct_ticks1 >> 22) & 1, (correct_ticks1 >> 21) & 1, (correct_ticks1 >> 20) & 1,
-//					(correct_ticks1 >> 19) & 1, (correct_ticks1 >> 18) & 1, (correct_ticks1 >> 17) & 1, (correct_ticks1 >> 16) & 1,
-//					(correct_ticks1 >> 15) & 1, (correct_ticks1 >> 14) & 1, (correct_ticks1 >> 13) & 1, (correct_ticks1 >> 12) & 1,
-//					(correct_ticks1 >> 11) & 1, (correct_ticks1 >> 10) & 1, (correct_ticks1 >> 9) & 1, (correct_ticks1 >> 8) & 1,
-//					(correct_ticks1 >> 7) & 1, (correct_ticks1 >> 6) & 1, (correct_ticks1 >> 5) & 1, (correct_ticks1 >> 4) & 1,
-//					(correct_ticks1 >> 3) & 1, (correct_ticks1 >> 2) & 1, (correct_ticks1 >> 1) & 1, (correct_ticks1 >> 0) & 1);
-//		printf(" %ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld\r\n",
-//					(correct_ticks2 >> 31) & 1, (correct_ticks2 >> 30) & 1, (correct_ticks2 >> 29) & 1, (correct_ticks2 >> 28) & 1,
-//					(correct_ticks2 >> 27) & 1, (correct_ticks2 >> 26) & 1, (correct_ticks2 >> 25) & 1, (correct_ticks2 >> 24) & 1,
-//					(correct_ticks2 >> 23) & 1, (correct_ticks2 >> 22) & 1, (correct_ticks2 >> 21) & 1, (correct_ticks2 >> 20) & 1,
-//					(correct_ticks2 >> 19) & 1, (correct_ticks2 >> 18) & 1, (correct_ticks2 >> 17) & 1, (correct_ticks2 >> 16) & 1,
-//					(correct_ticks2 >> 15) & 1, (correct_ticks2 >> 14) & 1, (correct_ticks2 >> 13) & 1, (correct_ticks2 >> 12) & 1,
-//					(correct_ticks2 >> 11) & 1, (correct_ticks2 >> 10) & 1, (correct_ticks2 >> 9) & 1, (correct_ticks2 >> 8) & 1,
-//					(correct_ticks2 >> 7) & 1, (correct_ticks2 >> 6) & 1, (correct_ticks2 >> 5) & 1, (correct_ticks2 >> 4) & 1,
-//					(correct_ticks2 >> 3) & 1, (correct_ticks2 >> 2) & 1, (correct_ticks2 >> 1) & 1, (correct_ticks2 >> 0) & 1);
-//
-//		 Difference
-//		printf("Difference:    %ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld",
-//					(diff1 >> 31) & 1, (diff1 >> 30) & 1, (diff1 >> 29) & 1, (diff1 >> 28) & 1,
-//					(diff1 >> 27) & 1, (diff1 >> 26) & 1, (diff1 >> 25) & 1, (diff1 >> 24) & 1,
-//					(diff1 >> 23) & 1, (diff1 >> 22) & 1, (diff1 >> 21) & 1, (diff1 >> 20) & 1,
-//					(diff1 >> 19) & 1, (diff1 >> 18) & 1, (diff1 >> 17) & 1, (diff1 >> 16) & 1,
-//					(diff1 >> 15) & 1, (diff1 >> 14) & 1, (diff1 >> 13) & 1, (diff1 >> 12) & 1,
-//					(diff1 >> 11) & 1, (diff1 >> 10) & 1, (diff1 >> 9) & 1, (diff1 >> 8) & 1,
-//					(diff1 >> 7) & 1, (diff1 >> 6) & 1, (diff1 >> 5) & 1, (diff1 >> 4) & 1,
-//					(diff1 >> 3) & 1, (diff1 >> 2) & 1, (diff1 >> 1) & 1, (diff1 >> 0) & 1);
-//		printf(" %ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld\r\n",
-//					(diff2 >> 31) & 1, (diff2 >> 30) & 1, (diff2 >> 29) & 1, (diff2 >> 28) & 1,
-//					(diff2 >> 27) & 1, (diff2 >> 26) & 1, (diff2 >> 25) & 1, (diff2 >> 24) & 1,
-//					(diff2 >> 23) & 1, (diff2 >> 22) & 1, (diff2 >> 21) & 1, (diff2 >> 20) & 1,
-//					(diff2 >> 19) & 1, (diff2 >> 18) & 1, (diff2 >> 17) & 1, (diff2 >> 16) & 1,
-//					(diff2 >> 15) & 1, (diff2 >> 14) & 1, (diff2 >> 13) & 1, (diff2 >> 12) & 1,
-//					(diff2 >> 11) & 1, (diff2 >> 10) & 1, (diff2 >> 9) & 1, (diff2 >> 8) & 1,
-//					(diff2 >> 7) & 1, (diff2 >> 6) & 1, (diff2 >> 5) & 1, (diff2 >> 4) & 1,
-//					(diff2 >> 3) & 1, (diff2 >> 2) & 1, (diff2 >> 1) & 1, (diff2 >> 0) & 1);
-//		printf("err: %" PRId32 "ms\r\n", err_ms);
-//		printf("Error bin: %ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld%ld\r\n",
-//			(err_ms >> 31) & 1, (err_ms >> 30) & 1, (err_ms >> 29) & 1, (err_ms >> 28) & 1,
-//			(err_ms >> 27) & 1, (err_ms >> 26) & 1, (err_ms >> 25) & 1, (err_ms >> 24) & 1,
-//			(err_ms >> 23) & 1, (err_ms >> 22) & 1, (err_ms >> 21) & 1, (err_ms >> 20) & 1,
-//			(err_ms >> 19) & 1, (err_ms >> 18) & 1, (err_ms >> 17) & 1, (err_ms >> 16) & 1,
-//			(err_ms >> 15) & 1, (err_ms >> 14) & 1, (err_ms >> 13) & 1, (err_ms >> 12) & 1,
-//			(err_ms >> 11) & 1, (err_ms >> 10) & 1, (err_ms >> 9) & 1, (err_ms >> 8) & 1,
-//			(err_ms >> 7) & 1, (err_ms >> 6) & 1, (err_ms >> 5) & 1, (err_ms >> 4) & 1,
-//			(err_ms >> 3) & 1, (err_ms >> 2) & 1, (err_ms >> 1) & 1, (err_ms >> 0) & 1);
 
 //		printf("\r\n--- TIME VALID ---\r\n");
 //		printf("Previous timer period: %" PRIu32 "\r\n", ticks_in_period);
