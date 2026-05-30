@@ -271,7 +271,7 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 	if (crc_bytes[0] == time_crc[0] && crc_bytes[1] == time_crc[1] && bcn_rx_enabled_flag == 1) {
 		bcn_rx_enabled_flag = 0;
 
-		HAL_UART_Transmit(&huart1, (uint8_t*)"BEACON_RCVD\r\n", 13, 100);
+//		HAL_UART_Transmit(&huart1, (uint8_t*)"BEACON_RCVD\r\n", 13, 100);
 
 		static uint32_t prev_timestamp = 0;
 
@@ -286,90 +286,130 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 
 		static int32_t offset = 0;
 		static int32_t prev_offset = 0;
-//		static int64_t integral_err = 0;
-//		static int32_t p_term = 0;
-//		static int32_t i_term = 0;
-
-//		static int64_t offset_sum = 0;
-//		static int32_t offset_avg = 0;
 
 		static uint64_t per_sum = 0;
 		static uint32_t per_avg = 0;
 		static uint16_t bcn_cnt = 0;
 
-//		static uint16_t secs_cnt = 0;
-
-		// Time stamp control and offset calculation
 		uint32_t ticks_slr = timestamp - sec_start_local;	// Ticks since last timer reset
 		uint16_t bad_timestamp_flag = 0;
-		offset = (int32_t)((int64_t)ticks_slr + (int64_t)tim_per * (int64_t)(time_unform_local - bcn_time_unform));
-		if (offset - prev_offset > 30000000) {
-			timestamp -= tim_per;
-			offset -= tim_per;
-			bad_timestamp_flag = 1;
-		}
-		prev_offset = offset;
 
-		// Phase 3
-		if (phase_flag > 1) {
-			secs_btw_bcns = (uint16_t)(bcn_time_unform - prev_bcn_time);
-			int64_t diff_timestamp = (int64_t)((int32_t)timestamp - (int32_t)prev_timestamp);
-			uint64_t expected_ticks = (uint64_t)secs_btw_bcns * (uint64_t)tim_per;
-			int32_t correction = (int32_t)(diff_timestamp - (int64_t)expected_ticks);
-			uint64_t ticks_btw_bcns = expected_ticks + correction;
+		// Phase 2 and 3
+		if (phase_flag > 0){
+			// Time stamp control and offset calculation
+			offset = (int32_t)((int64_t)ticks_slr + (int64_t)tim_per * (int64_t)(time_unform_local - bcn_time_unform));
+			if (offset - prev_offset > 30000000) {
+				timestamp -= tim_per;
+				offset -= tim_per;
+				bad_timestamp_flag = 1;
+			}
+			if (offset - prev_offset < -30000000) {
+				timestamp -= tim_per;
+				offset -= tim_per;
+				bad_timestamp_flag = 1;
+			}
+			prev_offset = offset;
 
 			// Period calculation
-			nom_per = (uint32_t)((ticks_btw_bcns + (uint64_t)(secs_btw_bcns / 2)) / (uint64_t)secs_btw_bcns);
-			if (nom_per > 48400000) nom_per -= per_avg / 128;
-			if (nom_per < 47850000) nom_per += per_avg / 128;
-			if (nom_per > 484000000) nom_per = per_avg;
-
-
-			// Average period calculation
-			per_sum += (uint64_t)nom_per;
-			per_avg = (uint32_t)(per_sum / (uint64_t)bcn_cnt);
-
-			// Offset correction
-			int32_t offset_corr = 0;
-			if (phase_flag > 15 || offset > MAX_OFFSET || offset < -MAX_OFFSET) {
-				offset_corr = offset / (secs_btw_bcns * 4);
-			}
-
-			// Timer period configuration
-			tim_per = per_avg + offset_corr;
-			update_display_flag = 1;
-
-			phase_flag ++;
-		}
-
-		// Phase 2
-		else if (phase_flag == 1) {
 			secs_btw_bcns = (uint16_t)(bcn_time_unform - prev_bcn_time);
 			int64_t diff_timestamp = (int64_t)((int32_t)timestamp - (int32_t)prev_timestamp);
 			uint64_t expected_ticks = (uint64_t)secs_btw_bcns * (uint64_t)tim_per;
 			int32_t correction = (int32_t)(diff_timestamp - (int64_t)expected_ticks);
 			uint64_t ticks_btw_bcns = expected_ticks + correction;
 
-			nom_per = (uint32_t)((ticks_btw_bcns + (secs_btw_bcns / 2)) / secs_btw_bcns);
-			if (nom_per > 48400000 || nom_per < 47850000) nom_per = 48154224;
+			nom_per = (uint32_t)((ticks_btw_bcns + (uint64_t)(secs_btw_bcns / 2)) / (uint64_t)secs_btw_bcns);
+			if (nom_per > 480000000) nom_per = per_avg;
 
 			// Average period calculation
 			per_sum += (uint64_t)nom_per;
 			per_avg = (uint32_t)(per_sum / (uint64_t)bcn_cnt);
 
-			// Timer reset
-			tim_per = per_avg;
-			__HAL_TIM_SET_COUNTER(&htim2, 0);
-			sec_start = 0;
-			timestamp = 0;
-			pulse_state = 0;
-			__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, sec_start + tim_per);
+			// Phase 3
+			if (phase_flag > 1) {
+				// Offset correction
+				int32_t offset_corr = 0;
+				if (phase_flag >= 15 || offset > MAX_OFFSET || offset < -MAX_OFFSET) offset_corr = offset / (secs_btw_bcns * 4);
+				if (phase_flag < 15) phase_flag ++;
 
-			time_unform = bcn_time_unform;
+				tim_per = per_avg + offset_corr;
+			}
+			// Phase 2
+			else if (phase_flag == 1) {
+				// Timer reset
+				tim_per = per_avg;
+				__HAL_TIM_SET_COUNTER(&htim2, 0);
+				sec_start = 0;
+				timestamp = 0;
+				pulse_state = 0;
+				__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, sec_start + tim_per + CONST_OFFSET);
+
+				time_unform = bcn_time_unform;
+				phase_flag ++;
+			}
+
 			update_display_flag = 1;
-
-			phase_flag ++;
 		}
+
+//		// Phase 3
+//		else if (phase_flag > 1) {
+//			secs_btw_bcns = (uint16_t)(bcn_time_unform - prev_bcn_time);
+//			int64_t diff_timestamp = (int64_t)((int32_t)timestamp - (int32_t)prev_timestamp);
+//			uint64_t expected_ticks = (uint64_t)secs_btw_bcns * (uint64_t)tim_per;
+//			int32_t correction = (int32_t)(diff_timestamp - (int64_t)expected_ticks);
+//			uint64_t ticks_btw_bcns = expected_ticks + correction;
+//
+//			// Period calculation
+//			nom_per = (uint32_t)((ticks_btw_bcns + (uint64_t)(secs_btw_bcns / 2)) / (uint64_t)secs_btw_bcns);
+////			if (nom_per > 48400000) nom_per -= per_avg / 128;
+////			if (nom_per < 47850000) nom_per += per_avg / 128;
+//			if (nom_per > 484000000) nom_per = per_avg;
+//
+//
+//			// Average period calculation
+//			per_sum += (uint64_t)nom_per;
+//			per_avg = (uint32_t)(per_sum / (uint64_t)bcn_cnt);
+//
+//			// Offset correction
+//			int32_t offset_corr = 0;
+//			if (phase_flag > 15 || offset > MAX_OFFSET || offset < -MAX_OFFSET) {
+//				offset_corr = offset / (secs_btw_bcns * 4);
+//			}
+//
+//			// Timer period configuration
+//			tim_per = per_avg + offset_corr;
+//			update_display_flag = 1;
+//
+//			phase_flag ++;
+//		}
+//
+//		// Phase 2
+//		else if (phase_flag == 1) {
+//			secs_btw_bcns = (uint16_t)(bcn_time_unform - prev_bcn_time);
+//			int64_t diff_timestamp = (int64_t)((int32_t)timestamp - (int32_t)prev_timestamp);
+//			uint64_t expected_ticks = (uint64_t)secs_btw_bcns * (uint64_t)tim_per;
+//			int32_t correction = (int32_t)(diff_timestamp - (int64_t)expected_ticks);
+//			uint64_t ticks_btw_bcns = expected_ticks + correction;
+//
+//			nom_per = (uint32_t)((ticks_btw_bcns + (secs_btw_bcns / 2)) / secs_btw_bcns);
+//			if (nom_per > 48400000 || nom_per < 47850000) nom_per = 48154224;
+//
+//			// Average period calculation
+//			per_sum += (uint64_t)nom_per;
+//			per_avg = (uint32_t)(per_sum / (uint64_t)bcn_cnt);
+//
+//			// Timer reset
+//			tim_per = per_avg;
+//			__HAL_TIM_SET_COUNTER(&htim2, 0);
+//			sec_start = 0;
+//			timestamp = 0;
+//			pulse_state = 0;
+//			__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, sec_start + tim_per);
+//
+//			time_unform = bcn_time_unform;
+//			update_display_flag = 1;
+//
+//			phase_flag ++;
+//		}
 
 		// Phase 1
 		else {
@@ -398,11 +438,11 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 //		printf("Seconds between beacons: %" PRIu16 ": ", secs_btw_bcns);
 		printf("Nominal period calculated: %" PRIu32 ": ", nom_per);
 		printf("Average period: %" PRIu32 ": ", per_avg);
-//		printf("Number of beacons received: %" PRIu16 ": ", bcn_cnt);
-//		printf("Ticks since start of the last second: %" PRIu32 ": ", ticks_slr);
 		printf("New timer period: %" PRIu32 ": ", tim_per);
 		printf("Offset: %" PRId32 ": ", offset);
 		printf("Bad time stamp detection: %" PRIu16 "\r\n", bad_timestamp_flag);
+//		printf("Number of beacons received: %" PRIu16 ": ", bcn_cnt);
+//		printf("Ticks since start of the last second: %" PRIu32 ": ", ticks_slr);
 //		printf("Average offset: %" PRId32 "\r\n", offset_avg);
 //		printf("Timer overflow: %" PRIu16 "\r\n", tim_overflow);
 //		printf("P term: %" PRId32 ": ", p_term);

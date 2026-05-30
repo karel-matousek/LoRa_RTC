@@ -607,7 +607,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 	        uint32_t local_tim_per;
 	        local_tim_per = tim_per;
 
-	        uint32_t next_compare = curr_ccr + (local_tim_per / 10U);
+	        uint32_t next_compare = curr_ccr + (local_tim_per / 10U) + CONST_OFFSET;
 	        __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, next_compare);
 
 	        update_display_flag = 1;
@@ -617,7 +617,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 	        pulse_state = 0;
 	        uint32_t local_tim_per;
 	        local_tim_per = tim_per;
-	        __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, sec_start + local_tim_per);
+	        __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, sec_start + local_tim_per + CONST_OFFSET);
 	    }
 	}
 	__enable_irq();
