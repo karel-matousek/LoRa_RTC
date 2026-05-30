@@ -591,6 +591,7 @@ static void MX_GPIO_Init(void)
 
 // TIM2 Callback
 void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
+	__disable_irq();
 	if (htim->Instance == TIM2) {
 		static uint32_t prev_sec_start = 0;
 		uint32_t curr_ccr = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
@@ -604,9 +605,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 	        prev_sec_start = sec_start;
 
 	        uint32_t local_tim_per;
-	        __disable_irq();
 	        local_tim_per = tim_per;
-	        __enable_irq();
 
 	        uint32_t next_compare = curr_ccr + (local_tim_per / 10U);
 	        __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, next_compare);
@@ -617,12 +616,11 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 	    else if (pulse_state == 1) {
 	        pulse_state = 0;
 	        uint32_t local_tim_per;
-	        __disable_irq();
 	        local_tim_per = tim_per;
-	        __enable_irq();
 	        __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, sec_start + local_tim_per);
 	    }
 	}
+	__enable_irq();
 }
 
 /* USER CODE END 4 */
