@@ -55,7 +55,6 @@ extern uint32_t sec_start;
 extern uint32_t tim_per;
 extern uint8_t pulse_state;
 extern uint32_t nom_per;
-extern uint16_t tim_overflow;
 /* USER CODE END EV */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -73,6 +72,7 @@ extern uint16_t tim_overflow;
 #define PAYLOAD_LENGTH		17			// Payload length 17 symbols
 
 #define MAX_OFFSET	1000000
+#define MAX_AVG		10
 
 #define DEBUG_PRINT
 
@@ -136,11 +136,6 @@ void SubghzApp_Init(void)
 	printf("SubghzApp_Init: initializing radio for LoRaWAN beacon listening\r\n");
 #endif
 
-	//RBI_Init();
-	//RBI_ConfigRFSwitch(RBI_SWITCH_RX);
-
-	//memset(&RadioEvents, 0, sizeof(RadioEvents));	// Clear radio memory
-
   /* USER CODE END SubghzApp_Init_1 */
 
   /* Radio initialization */
@@ -202,12 +197,9 @@ static void OnTxDone(void)
 static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraSnr_FskCfo)
 {
   /* USER CODE BEGIN OnRxDone */
-
-	__disable_irq();
-
 	uint32_t timestamp = __HAL_TIM_GET_COUNTER(&htim2);
-	uint32_t sec_start_local = sec_start;
 	uint32_t time_unform_local = time_unform;
+	uint32_t sec_start_local = sec_start;
 
 	static uint64_t phase_flag = 0;
 
@@ -236,11 +228,10 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 	else bcn_rx_enabled_flag = 1;
 	last_crc_result = crc_result;
 
-/*
 #ifdef DEBUG_PRINT
 	// Packet info
 	printf("\r=== PACKET RECEIVED ===\r\n\n");
-	printf("Size: %d bytes\r\nRSSI: %d dBm, SNR: %d dB\r\n", size, rssi, LoraSnr_FskCfo);
+	printf("RSSI: %d dBm, SNR: %d dB\r\n", size, rssi, LoraSnr_FskCfo);
 	printf("Data: ");
 	for (uint8_t i = 0; i < size; i++) {
 		printf("%02X ", payload[i]);
@@ -264,7 +255,6 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 		printf("%02X ", crc_bytes[i]);
 	}
 #endif
-*/
 
 	/*======================================================== TIME DECODING AND REGULATING ========================================================*/
 
@@ -294,19 +284,20 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 		uint32_t ticks_slr = timestamp - sec_start_local;	// Ticks since last timer reset
 		uint16_t bad_timestamp_flag = 0;
 
-		// Phase 2 and 3
+		// Phases 2 and 3
 		if (phase_flag > 0){
 			// Time stamp control and offset calculation
-			offset = (int32_t)((int64_t)ticks_slr + (int64_t)tim_per * (int64_t)(time_unform_local - bcn_time_unform));
+			offset = (int32_t)((int64_t)ticks_slr + (int64_t)tim_per * (int64_t)(time_unform_local - bcn_time_unform) - (int64_t)CONST_OFFSET);
 			if (offset - prev_offset > 30000000) {
 				timestamp -= tim_per;
 				offset -= tim_per;
 				bad_timestamp_flag = 1;
 			}
 			if (offset - prev_offset < -30000000) {
-				timestamp -= tim_per;
-				offset -= tim_per;
-				bad_timestamp_flag = 1;
+				timestamp += tim_per;
+				offset += tim_per;
+				bad_timestamp_flag = 2;
+				phase_flag = 1;
 			}
 			prev_offset = offset;
 
@@ -321,15 +312,20 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 			if (nom_per > 480000000) nom_per = per_avg;
 
 			// Average period calculation
+			static uint32_t prev_pers[MAX_AVG];
+			uint8_t per_index = (uint8_t)((bcn_cnt - 1) % MAX_AVG);
+			per_sum -= prev_pers[per_index];
+			prev_pers[per_index] = nom_per;
+
 			per_sum += (uint64_t)nom_per;
-			per_avg = (uint32_t)(per_sum / (uint64_t)bcn_cnt);
+			if (bcn_cnt >= MAX_AVG) per_avg = (uint32_t)(per_sum / (uint64_t)MAX_AVG);
+			else per_avg = (uint32_t)(per_sum / (uint64_t)bcn_cnt);
 
 			// Phase 3
 			if (phase_flag > 1) {
 				// Offset correction
 				int32_t offset_corr = 0;
-				if (phase_flag >= 15 || offset > MAX_OFFSET || offset < -MAX_OFFSET) offset_corr = offset / (secs_btw_bcns * 4);
-				if (phase_flag < 15) phase_flag ++;
+				offset_corr = offset / (secs_btw_bcns * 2);
 
 				tim_per = per_avg + offset_corr;
 			}
@@ -341,7 +337,7 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 				sec_start = 0;
 				timestamp = 0;
 				pulse_state = 0;
-				__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, sec_start + tim_per + CONST_OFFSET);
+				__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, sec_start + tim_per - CONST_OFFSET);
 
 				time_unform = bcn_time_unform;
 				phase_flag ++;
@@ -349,67 +345,6 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 
 			update_display_flag = 1;
 		}
-
-//		// Phase 3
-//		else if (phase_flag > 1) {
-//			secs_btw_bcns = (uint16_t)(bcn_time_unform - prev_bcn_time);
-//			int64_t diff_timestamp = (int64_t)((int32_t)timestamp - (int32_t)prev_timestamp);
-//			uint64_t expected_ticks = (uint64_t)secs_btw_bcns * (uint64_t)tim_per;
-//			int32_t correction = (int32_t)(diff_timestamp - (int64_t)expected_ticks);
-//			uint64_t ticks_btw_bcns = expected_ticks + correction;
-//
-//			// Period calculation
-//			nom_per = (uint32_t)((ticks_btw_bcns + (uint64_t)(secs_btw_bcns / 2)) / (uint64_t)secs_btw_bcns);
-////			if (nom_per > 48400000) nom_per -= per_avg / 128;
-////			if (nom_per < 47850000) nom_per += per_avg / 128;
-//			if (nom_per > 484000000) nom_per = per_avg;
-//
-//
-//			// Average period calculation
-//			per_sum += (uint64_t)nom_per;
-//			per_avg = (uint32_t)(per_sum / (uint64_t)bcn_cnt);
-//
-//			// Offset correction
-//			int32_t offset_corr = 0;
-//			if (phase_flag > 15 || offset > MAX_OFFSET || offset < -MAX_OFFSET) {
-//				offset_corr = offset / (secs_btw_bcns * 4);
-//			}
-//
-//			// Timer period configuration
-//			tim_per = per_avg + offset_corr;
-//			update_display_flag = 1;
-//
-//			phase_flag ++;
-//		}
-//
-//		// Phase 2
-//		else if (phase_flag == 1) {
-//			secs_btw_bcns = (uint16_t)(bcn_time_unform - prev_bcn_time);
-//			int64_t diff_timestamp = (int64_t)((int32_t)timestamp - (int32_t)prev_timestamp);
-//			uint64_t expected_ticks = (uint64_t)secs_btw_bcns * (uint64_t)tim_per;
-//			int32_t correction = (int32_t)(diff_timestamp - (int64_t)expected_ticks);
-//			uint64_t ticks_btw_bcns = expected_ticks + correction;
-//
-//			nom_per = (uint32_t)((ticks_btw_bcns + (secs_btw_bcns / 2)) / secs_btw_bcns);
-//			if (nom_per > 48400000 || nom_per < 47850000) nom_per = 48154224;
-//
-//			// Average period calculation
-//			per_sum += (uint64_t)nom_per;
-//			per_avg = (uint32_t)(per_sum / (uint64_t)bcn_cnt);
-//
-//			// Timer reset
-//			tim_per = per_avg;
-//			__HAL_TIM_SET_COUNTER(&htim2, 0);
-//			sec_start = 0;
-//			timestamp = 0;
-//			pulse_state = 0;
-//			__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, sec_start + tim_per);
-//
-//			time_unform = bcn_time_unform;
-//			update_display_flag = 1;
-//
-//			phase_flag ++;
-//		}
 
 		// Phase 1
 		else {
@@ -431,48 +366,32 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 #ifdef DEBUG_PRINT
 		format_time(bcn_time_unform, &td);
 
-//		printf("\r\n");
-//		printf("Received time: %02u:%02u:%02u: ", td.hours, td.minutes, td.seconds);
-//		printf("Received time unformatted: %" PRIu32 ": ", bcn_time_unform);
-//		printf("Assumed time unformatted: %" PRIu32 ": ", time_unform);
-//		printf("Seconds between beacons: %" PRIu16 ": ", secs_btw_bcns);
-		printf("Nominal period calculated: %" PRIu32 ": ", nom_per);
-		printf("Average period: %" PRIu32 ": ", per_avg);
-		printf("New timer period: %" PRIu32 ": ", tim_per);
-		printf("Offset: %" PRId32 ": ", offset);
+		printf("\r\n--- TIME VALID ---\r\n");
+		printf("Received time: %02u:%02u:%02u: ", td.hours, td.minutes, td.seconds);
+		printf("Received time unformatted: %" PRIu32 "\r\n", bcn_time_unform);
+		printf("Expected time unformatted: %" PRIu32 "\r\n", time_unform);
+		printf("Seconds between beacons: %" PRIu16 "\r\n", secs_btw_bcns);
+		printf("Nominal period calculated: %" PRIu32 "\r\n", nom_per);
+		printf("Average period: %" PRIu32 "\r\n", per_avg);
+		printf("New timer period: %" PRIu32 "\r\n", tim_per);
+		printf("Offset: %" PRId32 "\r\n", offset);
 		printf("Bad time stamp detection: %" PRIu16 "\r\n", bad_timestamp_flag);
-//		printf("Number of beacons received: %" PRIu16 ": ", bcn_cnt);
-//		printf("Ticks since start of the last second: %" PRIu32 ": ", ticks_slr);
-//		printf("Average offset: %" PRId32 "\r\n", offset_avg);
-//		printf("Timer overflow: %" PRIu16 "\r\n", tim_overflow);
-//		printf("P term: %" PRId32 ": ", p_term);
-//		printf("I term: %" PRId32 "\r\n", i_term);
-
-
-//		printf("\r\n--- TIME VALID ---\r\n");
-//		printf("Previous timer period: %" PRIu32 "\r\n", ticks_in_period);
-//		printf("Timer periods since last beacon counted: %" PRIu16 "\r\n", periods_since_last_beacon);
-//		printf("Total periods counted: %" PRIu16 "\r\n", secs_cnt);
-//		printf("Timestamp: %" PRIu32 "\r\n", timestamp);
-//		printf("Previous timestamp: %" PRIu32 "\r\n", prev_timestamp);
-//		printf("Number of received beacons: %u\r\n", beacons_received);
-//		printf("Number of passed beacons: %u\r\n", beacons_passed);
+		printf("Number of beacons received: %" PRIu16 "\r\n", bcn_cnt);
+		printf("Ticks since start of the last second: %" PRIu32 "\r\n", ticks_slr);
+		printf("Time stamp: %" PRIu32 "\r\n", timestamp);
 #endif
-
-		tim_overflow = 0;
 	} else {
 #ifdef DEBUG_PRINT
-//		printf("-- TIME INVALID --\r\n");
+		printf("\r\n-- TIME INVALID --\r\n");
 #endif
 	}
 
 	// End of message
 #ifdef DEBUG_PRINT
-//	printf("\r\n=======================\r\n\n");
+	printf("\r\n=======================\r\n\n");
 #endif
 
 	Radio.RxBoosted(0);
-	__enable_irq();
   /* USER CODE END OnRxDone */
 }
 

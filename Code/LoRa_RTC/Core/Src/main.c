@@ -73,7 +73,6 @@ volatile uint32_t sec_start = 0;
 volatile uint8_t pulse_state = 0;
 volatile uint32_t tim_per = INIT_PERIOD;
 volatile uint32_t nom_per = INIT_PERIOD;
-volatile uint16_t tim_overflow = 0;
 time_date_t td;
 /* USER CODE END PV */
 
@@ -137,11 +136,6 @@ int main(void)
   MX_TIM16_Init();
   /* USER CODE BEGIN 2 */
 
-//	register_timer(&htim2);
-
-//	__HAL_TIM_SET_COUNTER(&htim2, 0);	// Reseting the timer
-//	HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_1);
-
 	// SubghzApp_Init();
 #ifdef DEBUG_PRINT
 	printf("Radio initialized.\r\n");
@@ -158,11 +152,7 @@ int main(void)
 
 	ssd1306_UpdateScreen();
 
-//	HAL_TIM_OC_Start_IT(&htim2, TIM_CHANNEL_1);
 	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, INIT_PERIOD);
-
-//	__HAL_TIM_SET_COUNTER(&htim2, 0);
-//	HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_1);
 
   /* USER CODE END 2 */
 
@@ -588,26 +578,16 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
 // TIM2 Callback
 void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
-	__disable_irq();
 	if (htim->Instance == TIM2) {
-		static uint32_t prev_sec_start = 0;
 		uint32_t curr_ccr = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
-	    if (curr_ccr < prev_sec_start) {
-	        tim_overflow ++;
-	    }
 
 	    if (pulse_state == 0) {
 	        pulse_state = 1;
 	        sec_start = curr_ccr;
-	        prev_sec_start = sec_start;
 
-	        uint32_t local_tim_per;
-	        local_tim_per = tim_per;
-
-	        uint32_t next_compare = curr_ccr + (local_tim_per / 10U) + CONST_OFFSET;
+	        uint32_t next_compare = curr_ccr + (tim_per / 10U);
 	        __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, next_compare);
 
 	        update_display_flag = 1;
@@ -615,14 +595,10 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 	    }
 	    else if (pulse_state == 1) {
 	        pulse_state = 0;
-	        uint32_t local_tim_per;
-	        local_tim_per = tim_per;
-	        __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, sec_start + local_tim_per + CONST_OFFSET);
+	        __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, sec_start +_tim_per);
 	    }
 	}
-	__enable_irq();
 }
-
 /* USER CODE END 4 */
 
 /**
