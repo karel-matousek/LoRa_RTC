@@ -1,20 +1,20 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2025 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file           : main.c
+ * @brief          : Main program body
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2025 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -23,11 +23,15 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include <inttypes.h>
+
 #include "stm32wlxx_hal_uart.h"
 #include "radio.h"
 #include "subghz_phy_app.h"
 #include "ssd1306.h"
 #include "ssd1306_fonts.h"
+#include "utils.h"
+#include "time_format.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -37,7 +41,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define INIT_PERIOD 	48000000
 
+#define DEBUG_PRINT
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -57,7 +63,15 @@ TIM_HandleTypeDef htim2;
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
-
+volatile uint32_t time_unform;
+volatile uint16_t tmr_pers = 0;
+volatile uint32_t timer16_periods = 0;
+volatile uint8_t update_display_flag = 0;
+volatile uint32_t sec_start = 0;
+volatile uint8_t pulse_state = 0;
+volatile uint32_t tim_per = INIT_PERIOD;
+volatile uint32_t nom_per = INIT_PERIOD;
+time_date_t td;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -75,12 +89,11 @@ int __io_putchar(int ch);
 /* USER CODE BEGIN 0 */
 
 /**
-  * @brief  printf() to UART
-  */
-int __io_putchar(int ch)
-{
-    HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
-    return ch;
+ * @brief  printf() to UART
+ */
+int __io_putchar(int ch) {
+	HAL_UART_Transmit(&huart1, (uint8_t*) &ch, 1, HAL_MAX_DELAY);
+	return ch;
 }
 /* USER CODE END 0 */
 
@@ -119,25 +132,53 @@ int main(void)
   MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
 
-  // SubghzApp_Init();
-  printf("Radio initialized.\r\n");
+	// SubghzApp_Init();
+#ifdef DEBUG_PRINT
+	printf("Radio initialized.\r\n");
+#endif
+	ssd1306_Init();
+	ssd1306_Fill(Black);
+	ssd1306_UpdateScreen();
 
-  ssd1306_Init();
-  ssd1306_Fill(Black);
-  ssd1306_UpdateScreen();
+	char text_buffer[20];
+
+	sprintf(text_buffer, "LoRa RTC");
+	ssd1306_SetCursor(2, 0);
+	ssd1306_WriteString(text_buffer, Font_11x18, White);
+
+	ssd1306_UpdateScreen();
+
+	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, INIT_PERIOD);
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
+	while (1) {
+		if (update_display_flag) {
+			update_display_flag = 0;
 
+			format_time(time_unform, &td);
+			format_date(time_unform, &td);
+
+			// OLED
+			char text_buffer[30];
+
+			sprintf(text_buffer, "%02u:%02u:%02u\r\n", td.hours, td.minutes, td.seconds);
+			ssd1306_SetCursor(2, 0);
+			ssd1306_WriteString(text_buffer, Font_11x18, White);
+
+			sprintf(text_buffer, "%s %u %u\r\n", td.month, td.day, td.year);
+			ssd1306_SetCursor(2, 20);
+			ssd1306_WriteString(text_buffer, Font_6x8, White);
+
+			ssd1306_UpdateScreen();
+		}
     /* USER CODE END WHILE */
     MX_SubGHz_Phy_Process();
 
     /* USER CODE BEGIN 3 */
-  }
+	}
   /* USER CODE END 3 */
 }
 
@@ -249,10 +290,6 @@ static void MX_RTC_Init(void)
 
   /* USER CODE END RTC_Init 0 */
 
-  RTC_TimeTypeDef sTime = {0};
-  RTC_DateTypeDef sDate = {0};
-  RTC_AlarmTypeDef sAlarm = {0};
-
   /* USER CODE BEGIN RTC_Init 1 */
 
   /* USER CODE END RTC_Init 1 */
@@ -270,49 +307,6 @@ static void MX_RTC_Init(void)
   hrtc.Init.OutPutPullUp = RTC_OUTPUT_PULLUP_NONE;
   hrtc.Init.BinMode = RTC_BINARY_NONE;
   if (HAL_RTC_Init(&hrtc) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /* USER CODE BEGIN Check_RTC_BKUP */
-
-  /* USER CODE END Check_RTC_BKUP */
-
-  /** Initialize RTC and set the Time and Date
-  */
-  sTime.Hours = 0x0;
-  sTime.Minutes = 0x0;
-  sTime.Seconds = 0x0;
-  sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
-  sTime.StoreOperation = RTC_STOREOPERATION_RESET;
-  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sDate.WeekDay = RTC_WEEKDAY_MONDAY;
-  sDate.Month = RTC_MONTH_JANUARY;
-  sDate.Date = 0x1;
-  sDate.Year = 0x0;
-
-  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Enable the Alarm A
-  */
-  sAlarm.AlarmTime.Hours = 0x0;
-  sAlarm.AlarmTime.Minutes = 0x0;
-  sAlarm.AlarmTime.Seconds = 0x0;
-  sAlarm.AlarmTime.SubSeconds = 0x0;
-  sAlarm.AlarmTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
-  sAlarm.AlarmTime.StoreOperation = RTC_STOREOPERATION_RESET;
-  sAlarm.AlarmMask = RTC_ALARMMASK_NONE;
-  sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
-  sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_DATE;
-  sAlarm.AlarmDateWeekDay = 0x1;
-  sAlarm.Alarm = RTC_ALARM_A;
-  if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BCD) != HAL_OK)
   {
     Error_Handler();
   }
@@ -362,16 +356,17 @@ static void MX_TIM2_Init(void)
 
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
 
   /* USER CODE BEGIN TIM2_Init 1 */
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 47999;
+  htim2.Init.Prescaler = 0;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 999;
+  htim2.Init.Period = 0xffffffff;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
   {
     Error_Handler();
@@ -381,15 +376,28 @@ static void MX_TIM2_Init(void)
   {
     Error_Handler();
   }
+  if (HAL_TIM_OC_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
   {
     Error_Handler();
   }
+  sConfigOC.OCMode = TIM_OCMODE_TOGGLE;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_OC_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
   /* USER CODE BEGIN TIM2_Init 2 */
 
   /* USER CODE END TIM2_Init 2 */
+  HAL_TIM_MspPostInit(&htim2);
 
 }
 
@@ -480,14 +488,34 @@ static void MX_GPIO_Init(void)
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
-  HAL_GPIO_WritePin(GPIOA, RF_SW_CTRL1_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(GPIOA, RF_SW_CTRL2_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOA, RF_SW_CTRL1_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOA, RF_SW_CTRL2_Pin, GPIO_PIN_RESET);
 
   /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
+// TIM2 Callback
+void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
+	if (htim->Instance == TIM2) {
+		uint32_t curr_ccr = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
 
+	    if (pulse_state == 0) {
+	        pulse_state = 1;
+	        sec_start = curr_ccr;
+
+	        uint32_t next_compare = curr_ccr + (tim_per / 10U);
+	        __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, next_compare);
+
+	        update_display_flag = 1;
+	        time_unform ++;
+	    }
+	    else if (pulse_state == 1) {
+	        pulse_state = 0;
+	        __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, sec_start +_tim_per);
+	    }
+	}
+}
 /* USER CODE END 4 */
 
 /**
@@ -497,11 +525,10 @@ static void MX_GPIO_Init(void)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  printf("Error_Handler triggered!");
-  __disable_irq();
-  while (1)
-  {
-  }
+	printf("Error_Handler triggered!");
+	__disable_irq();
+	while (1) {
+	}
   /* USER CODE END Error_Handler_Debug */
 }
 #ifdef USE_FULL_ASSERT

@@ -49,12 +49,13 @@ extern "C" {
 
 /* USER CODE END EM */
 
+void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
+
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 void MX_SUBGHZ_Init(void);
 
 /* USER CODE BEGIN EFP */
-
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -64,7 +65,7 @@ void MX_SUBGHZ_Init(void);
 #define RF_SW_CTRL2_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
-
+#define CONST_OFFSET	7508284
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

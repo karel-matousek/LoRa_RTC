@@ -60,7 +60,6 @@ extern "C" {
 void SubghzApp_Init(void);
 
 /* USER CODE BEGIN EFP */
-
 /* USER CODE END EFP */
 
 #ifdef __cplusplus
