@@ -60,7 +60,6 @@ extern "C" {
 void SubghzApp_Init(void);
 
 /* USER CODE BEGIN EFP */
-//void register_timer(TIM_HandleTypeDef *htim);
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

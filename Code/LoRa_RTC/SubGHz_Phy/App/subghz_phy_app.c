@@ -45,12 +45,8 @@
 extern uint32_t time_unform;
 extern TIM_HandleTypeDef htim2;
 extern UART_HandleTypeDef huart1;
-extern uint16_t tmr_pers;
 extern time_date_t td;
-extern int32_t change;
 extern uint8_t update_display_flag;
-extern uint32_t timer16_periods;
-extern TIM_HandleTypeDef htim16;
 extern uint32_t sec_start;
 extern uint32_t tim_per;
 extern uint8_t pulse_state;

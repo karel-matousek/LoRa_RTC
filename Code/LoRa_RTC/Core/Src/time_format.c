@@ -26,7 +26,7 @@ void format_time(uint32_t time_u, time_date_t *td) {
 
 // Function for date formatting
 void format_date(uint32_t time_u, time_date_t *td) {
-	time_u += 3600 * TIME_ZONE + 3600 * SUMMER_TIME + LEAP_SECS;
+	time_u += 3600 * TIME_ZONE + 3600 * SUMMER_TIME - LEAP_SECS;
 	uint32_t days_passed = (time_u / 86400) + 6;	// Days passed since Jan 1 1980
 
 	// =============== Year format ===============
