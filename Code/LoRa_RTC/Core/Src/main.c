@@ -512,7 +512,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 	    }
 	    else if (pulse_state == 1) {
 	        pulse_state = 0;
-	        __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, sec_start +_tim_per);
+	        __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, sec_start + tim_per);
 	    }
 	}
 }

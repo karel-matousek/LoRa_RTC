@@ -239,6 +239,12 @@ static void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t LoraS
 		printf("%02X ", time_data[3 - i]);
 	}
 
+	// Gateway data
+	printf("\r\nGW data: ");
+	for (uint8_t i = 0; i < 7; i++) {
+		printf("%02X ", payload[i + 8]);
+	}
+
 	// Time CRC data
 	printf("\r\nTime CRC data: ");
 	for (uint8_t i = 0; i < 2; i++) {
